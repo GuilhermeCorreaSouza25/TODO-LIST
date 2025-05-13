@@ -1,0 +1,9 @@
+USE tasks;
+
+CREATE TABLE IF NOT EXISTS tasks (
+  id VARCHAR(36) PRIMARY KEY,
+  text VARCHAR(255) NOT NULL,
+  completed TINYINT(1) DEFAULT 0,
+  createdAt DATETIME NOT NULL,
+  dueDate DATETIME NULL
+);
