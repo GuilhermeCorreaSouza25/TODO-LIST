@@ -10,7 +10,8 @@ Ela inclui funcionalidades como criação, remoção e atualização de tarefas,
 - Notificações por email:
     - Confirmação de adição de nova tarefa.
     - Confirmação de remoção de tarefa.
-    - Aviso de tarefa próxima (prazo de uma hora ou menor).
+    - Aviso de mudança na tarefa (nome ou data/hora).
+    <!-- - Aviso de tarefa próxima (prazo de uma hora ou menor). -->
 - Interface responsiva utilizando Tailwind CSS.
 - Backend robusto com Node.js e Express.
 - Aplicação containerizada com Docker para fácil deployment.
@@ -120,12 +121,3 @@ Crie os seguintes arquivos `.env` e preencha com suas credenciais:
 - **Lembrete de Adição de Nova Tarefa:** Um email é enviado ao `USER_EMAIL` quando uma nova tarefa é criada.
 - **Remoção de Tarefa:** Um email é enviado ao `USER_EMAIL` quando uma tarefa é removida.
 - **Aviso de Tarefa Próxima:** O sistema verifica a cada minuto se há tarefas com prazo dentro da próxima hora e envia um email de aviso ao `USER_EMAIL`.
-
-## Melhorias Futuras
-
-- Autenticação de usuários (para múltiplos usuários).
-- Persistência de dados com um banco de dados real (PostgreSQL, MongoDB).
-- Testes unitários e de integração.
-- Interface de usuário mais elaborada.
-- Opções de configuração de notificações no frontend.
-- Notificações push no navegador.
