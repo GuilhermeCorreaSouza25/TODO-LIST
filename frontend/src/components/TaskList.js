@@ -8,7 +8,7 @@ const TaskList = ({ tasks, onTaskUpdated, onTaskDeleted, onSelectTask }) => {
     try {
       const apiUrl = process.env.REACT_APP_API_URL;
       const response = await axios.put(`${apiUrl}/tasks/${task.id}`, {
-        text: updatedTask.text,
+        task: updatedTask.task,
         dueDate: updatedTask.dueDate,
         completed: updatedTask.completed
       });

@@ -8,7 +8,7 @@ const AddTaskForm = ({ onTaskAdded, onTaskUpdated, selectedTask, onCancelEdit })
 
   useEffect(() => {
     if (selectedTask) {
-      setText(selectedTask.text || '');
+      setText(selectedTask.task || '');
       setDueDate(selectedTask.dueDate ? new Date(selectedTask.dueDate).toISOString().slice(0, 16) : '');
     } else {
       setText('');
@@ -25,12 +25,12 @@ const AddTaskForm = ({ onTaskAdded, onTaskUpdated, selectedTask, onCancelEdit })
     try {
       if (selectedTask) {
         // Atualizar tarefa existente
-        const updatedTask = { text, dueDate: dueDate || null };
+        const updatedTask = { task: text, dueDate: dueDate || null };
         const response = await axios.put(`${apiUrl}/tasks/${selectedTask.id}`, updatedTask);
         onTaskUpdated(response.data);
       } else {
         // Adicionar nova tarefa
-        const newTask = { text, dueDate: dueDate || null };
+        const newTask = { task: text, dueDate: dueDate || null };
         const response = await axios.post(`${apiUrl}/tasks`, newTask);
         onTaskAdded(response.data);
       }

@@ -8,7 +8,7 @@ const TaskItem = ({ task, onTaskUpdated, onTaskDeleted, onSelectTask, onToggleCo
     try {
       const updatedTask = { ...task, completed: !task.completed };
       const response = await axios.put(`${apiUrl}/tasks/${task.id}`, {
-        text: updatedTask.text,
+        task: updatedTask.task,
         dueDate: updatedTask.dueDate,
         completed: updatedTask.completed
       });
@@ -21,7 +21,7 @@ const TaskItem = ({ task, onTaskUpdated, onTaskDeleted, onSelectTask, onToggleCo
   };
 
   const handleDelete = async () => {
-    if (window.confirm(`Tem certeza que deseja remover a tarefa "${task.text}"?`)) {
+    if (window.confirm(`Tem certeza que deseja remover a tarefa "${task.task}"?`)) {
       try {
         await axios.delete(`${apiUrl}/tasks/${task.id}`);
         onTaskDeleted(task.id);
@@ -37,7 +37,7 @@ const TaskItem = ({ task, onTaskUpdated, onTaskDeleted, onSelectTask, onToggleCo
       <div className="flex items-center">
         <div onClick={() => onSelectTask && onSelectTask(task)} style={{ cursor: 'pointer' }} className="flex-1">
           <span className={`text-lg ${task.completed ? 'text-gray-500' : 'text-gray-800'}`}>
-            {task.text}
+            {task.task}
           </span>
           {task.dueDate && (
             <p className={`text-xs ${new Date(task.dueDate) < new Date() && !task.completed ? 'text-red-500 font-semibold' : 'text-gray-500'}`}>
