@@ -4,6 +4,7 @@ import axios from 'axios';
 const AddTaskForm = ({ onTaskAdded, onTaskUpdated, selectedTask, onCancelEdit }) => {
   const [text, setText] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [loading, setLoading] = useState(false);
   const apiUrl = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
@@ -22,6 +23,7 @@ const AddTaskForm = ({ onTaskAdded, onTaskUpdated, selectedTask, onCancelEdit })
       alert('A descrição da tarefa não pode estar vazia.');
       return;
     }
+    setLoading(true);
     try {
       if (selectedTask) {
         // Atualizar tarefa existente
@@ -39,6 +41,8 @@ const AddTaskForm = ({ onTaskAdded, onTaskUpdated, selectedTask, onCancelEdit })
     } catch (error) {
       console.error('Erro ao salvar tarefa:', error);
       alert('Falha ao salvar tarefa. Verifique o console para mais detalhes.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -74,10 +78,14 @@ const AddTaskForm = ({ onTaskAdded, onTaskUpdated, selectedTask, onCancelEdit })
           <button
             type="submit"
             className="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            disabled={loading}
           >
-            {selectedTask ? 'Atualizar Tarefa' : 'Adicionar Tarefa'}
+            {loading ? (selectedTask ? 'Atualizando...' : 'Adicionando...') : (selectedTask ? 'Atualizar Tarefa' : 'Adicionar Tarefa')}
           </button>
-          {selectedTask && (
+          {loading && (
+            <Spinner />
+          )}
+          {selectedTask && !loading && (
             <button
               type="button"
               onClick={onCancelEdit}
@@ -91,5 +99,14 @@ const AddTaskForm = ({ onTaskAdded, onTaskUpdated, selectedTask, onCancelEdit })
     </form>
   );
 };
+
+// Spinner simples com Tailwind
+function Spinner() {
+  return (
+    <div className="flex justify-center mt-2">
+      <div className="animate-spin rounded-full h-8 w-8 border-4 border-indigo-500 border-t-transparent"></div>
+    </div>
+  );
+}
 
 export default AddTaskForm;
