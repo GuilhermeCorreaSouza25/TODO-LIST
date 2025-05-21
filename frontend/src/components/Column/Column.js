@@ -2,9 +2,11 @@ import './Column.scss';
 // import imgDesign from '../../assets/img-design.png';
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import Task from '../Task/Task';
+import Card from '../Card/Card';
 
-const Column = () => {
+const Column = (props) => {
+    const { column } = props;
+
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -12,22 +14,22 @@ const Column = () => {
 
     const fetchTasks = useCallback(async () => {
         try {
-        setLoading(true);
-        const response = await axios.get(`${apiUrl}/tasks`);
-        const sortedTasks = response.data.sort((a, b) => {
-            if (a.completed !== b.completed) {
-            return a.completed ? 1 : -1;
-            }
-            return new Date(b.createdAt) - new Date(a.createdAt);
-        });
-        setTasks(sortedTasks);
-        setError(null);
+            setLoading(true);
+            const response = await axios.get(`${apiUrl}/tasks`);
+            const sortedTasks = response.data.sort((a, b) => {
+                if (a.completed !== b.completed) {
+                    return a.completed ? 1 : -1;
+                }
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            });
+            setTasks(sortedTasks);
+            setError(null);
         } catch (err) {
-        console.error("Erro ao buscar tarefas:", err);
-        setError("Falha ao carregar tarefas. Verifique a conexão com o backend.");
-        setTasks([]);
+            console.error("Erro ao buscar tarefas:", err);
+            setError("Falha ao carregar tarefas. Verifique a conexão com o backend.");
+            setTasks([]);
         } finally {
-        setLoading(false);
+            setLoading(false);
         }
     }, [apiUrl]);
 
@@ -38,80 +40,16 @@ const Column = () => {
     return (
         <>
             <div className="column">
-                <header className="board-column">Brainstorm</header>
-                <ul className="task-list">
-                    <Task />
-
-                    {tasks.map(task => (
-                    <li key={task.id} className="task-item">
-                        {task.task}
-                    </li>
+                <header className="board-column">{column.name}</header>
+                <ul className="card-list">
+                    {column.cards && column.cards.map((card, index) => (
+                        <Card key={card.id} card={card} isFirstCard={index === 0} />
                     ))}
-
-
-                    <li className="task-item">
-                    first
-                    </li>
-                    <li className="task-item">
-                    second
-                    </li>
-                    <li className="task-item">
-                    third
-                    </li>
-                    <li className="task-item">
-                    first
-                    </li>
-                    <li className="task-item">
-                    second
-                    </li>
-                    <li className="task-item">
-                    third
-                    </li>
-                    <li className="task-item">
-                    first
-                    </li>
-                    <li className="task-item">
-                    second
-                    </li>
-                    <li className="task-item">
-                    third
-                    </li>
-                    <li className="task-item">
-                    first
-                    </li>
-                    <li className="task-item">
-                    second
-                    </li>
-                    <li className="task-item">
-                    third
-                    </li>
-                    <li className="task-item">
-                    first
-                    </li>
-                    <li className="task-item">
-                    second
-                    </li>
-                    <li className="task-item">
-                    third
-                    </li>
-                    <li className="task-item">
-                    first
-                    </li>
-                    <li className="task-item">
-                    second
-                    </li>
-                    <li className="task-item">
-                    third
-                    </li>
-                    <li className="task-item">
-                    first
-                    </li>
-                    <li className="task-item">
-                    second
-                    </li>
-                    <li className="task-item">
-                    third
-                    </li>
+                    {tasks.map(task => (
+                        <li key={task.id} className="card-item">
+                            {task.task}
+                        </li>
+                    ))}
                 </ul>
                 <footer>Add another card</footer>
             </div>

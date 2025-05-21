@@ -3,12 +3,12 @@ import TaskItem from './TaskItem';
 import axios from 'axios';
 
 const TaskList = ({ tasks, onTaskUpdated, onTaskDeleted, onSelectTask }) => {
-  const handleToggleComplete = async (task) => {
-    const updatedTask = { ...task, completed: !task.completed };
+  const handleToggleComplete = async (card) => {
+    const updatedTask = { ...card, completed: !card.completed };
     try {
       const apiUrl = process.env.REACT_APP_API_URL;
-      const response = await axios.put(`${apiUrl}/tasks/${task.id}`, {
-        task: updatedTask.task,
+      const response = await axios.put(`${apiUrl}/tasks/${card.id}`, {
+        card: updatedTask.card,
         dueDate: updatedTask.dueDate,
         completed: updatedTask.completed
       });
@@ -27,10 +27,10 @@ const TaskList = ({ tasks, onTaskUpdated, onTaskDeleted, onSelectTask }) => {
         <p className="text-center text-gray-500">Nenhuma tarefa pendente.</p>
       )}
       <ul className="space-y-3">
-        {pendentes.map(task => (
+        {pendentes.map(card => (
           <TaskItem
-            key={task.id}
-            task={task}
+            key={card.id}
+            card={card}
             onTaskUpdated={onTaskUpdated}
             onTaskDeleted={onTaskDeleted}
             onSelectTask={onSelectTask}
@@ -42,10 +42,10 @@ const TaskList = ({ tasks, onTaskUpdated, onTaskDeleted, onSelectTask }) => {
         <div className="mt-8">
           <h2 className="text-lg font-semibold text-gray-700 mb-2">Tarefas Concluídas</h2>
           <ul className="space-y-3">
-            {concluidas.map(task => (
+            {concluidas.map(card => (
               <TaskItem
-                key={task.id}
-                task={task}
+                key={card.id}
+                card={card}
                 onTaskUpdated={onTaskUpdated}
                 onTaskDeleted={onTaskDeleted}
                 onSelectTask={onSelectTask}

@@ -9,7 +9,7 @@ const AddTaskForm = ({ onTaskAdded, onTaskUpdated, selectedTask, onCancelEdit })
 
   useEffect(() => {
     if (selectedTask) {
-      setText(selectedTask.task || '');
+      setText(selectedTask.card || '');
       setDueDate(selectedTask.dueDate ? new Date(selectedTask.dueDate).toISOString().slice(0, 16) : '');
     } else {
       setText('');
@@ -27,12 +27,12 @@ const AddTaskForm = ({ onTaskAdded, onTaskUpdated, selectedTask, onCancelEdit })
     try {
       if (selectedTask) {
         // Atualizar tarefa existente
-        const updatedTask = { task: text, dueDate: dueDate || null };
+        const updatedTask = { card: text, dueDate: dueDate || null };
         const response = await axios.put(`${apiUrl}/tasks/${selectedTask.id}`, updatedTask);
         onTaskUpdated(response.data);
       } else {
         // Adicionar nova tarefa
-        const newTask = { task: text, dueDate: dueDate || null };
+        const newTask = { card: text, dueDate: dueDate || null };
         const response = await axios.post(`${apiUrl}/tasks`, newTask);
         onTaskAdded(response.data);
       }
@@ -50,11 +50,11 @@ const AddTaskForm = ({ onTaskAdded, onTaskUpdated, selectedTask, onCancelEdit })
     <form onSubmit={handleSubmit} className="mb-6 p-4 bg-white shadow-md rounded-lg">
       <div className="flex flex-col sm:flex-row sm:items-end gap-4">
         <div className="flex-grow">
-          <label htmlFor="task-text" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="card-text" className="block text-sm font-medium text-gray-700 mb-1">
             {selectedTask ? 'Editar Tarefa' : 'Nova Tarefa'}
           </label>
           <input
-            id="task-text"
+            id="card-text"
             type="text"
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -63,11 +63,11 @@ const AddTaskForm = ({ onTaskAdded, onTaskUpdated, selectedTask, onCancelEdit })
           />
         </div>
         <div className="flex-grow sm:flex-grow-0 sm:w-auto">
-          <label htmlFor="task-due-date" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="card-due-date" className="block text-sm font-medium text-gray-700 mb-1">
             Prazo (Opcional)
           </label>
           <input
-            id="task-due-date"
+            id="card-due-date"
             type="datetime-local"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}

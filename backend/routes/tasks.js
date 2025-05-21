@@ -23,18 +23,18 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST a new task
+// POST a new card
 router.post('/', async (req, res) => {
-  const { task, dueDate } = req.body;
-  if (!task) {
-    return res.status(400).json({ message: 'Task is required' });
+  const { card, dueDate } = req.body;
+  if (!card) {
+    return res.status(400).json({ message: 'Card is required' });
   }
   const id = uuidv4();
   const createdAt = new Date();
   try {
     await pool.query(
-      'INSERT INTO tasks (id, task, completed, createdAt, dueDate) VALUES (?, ?, ?, ?, ?)',
-      [id, task, false, createdAt, dueDate ? new Date(dueDate) : null]
+      'INSERT INTO tasks (id, card, completed, createdAt, dueDate) VALUES (?, ?, ?, ?, ?)',
+      [id, card, false, createdAt, dueDate ? new Date(dueDate) : null]
     );
     const [rows] = await pool.query('SELECT * FROM tasks WHERE id = ?', [id]);
     const newTask = rows[0];
@@ -44,8 +44,8 @@ router.post('/', async (req, res) => {
       await sendEmail(
         USER_EMAIL,
         'Nova Tarefa Adicionada!',
-        `Uma nova tarefa foi adicionada à sua lista: "${newTask.task}". Prazo: ${newTask.dueDate ? new Date(newTask.dueDate).toLocaleString() : 'N/A'}`,
-        `<p>Uma nova tarefa foi adicionada à sua lista: <strong>"${newTask.task}"</strong>.</p><p>Prazo: ${newTask.dueDate ? new Date(newTask.dueDate).toLocaleString() : 'N/A'}</p>`
+        `Uma nova tarefa foi adicionada à sua lista: "${newTask.card}". Prazo: ${newTask.dueDate ? new Date(newTask.dueDate).toLocaleString() : 'N/A'}`,
+        `<p>Uma nova tarefa foi adicionada à sua lista: <strong>"${newTask.card}"</strong>.</p><p>Prazo: ${newTask.dueDate ? new Date(newTask.dueDate).toLocaleString() : 'N/A'}</p>`
       );
     }
 
@@ -55,10 +55,10 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT update a task (nome, data/hora e/ou completed)
+// PUT update a card (nome, data/hora e/ou completed)
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  let { task, dueDate, completed } = req.body;
+  let { card, dueDate, completed } = req.body;
   try {
     let sendCompletedEmail = false;
     // Buscar tarefa original para comparar completed
@@ -78,11 +78,11 @@ router.put('/:id', async (req, res) => {
       dueDate = toMySQLDateTime(dueDate);
     }
     const [result] = await pool.query(
-      'UPDATE tasks SET task = COALESCE(?, task), dueDate = COALESCE(?, dueDate), completed = COALESCE(?, completed) WHERE id = ?',
-      [task, dueDate !== undefined ? dueDate : null, completed, id]
+      'UPDATE tasks SET card = COALESCE(?, card), dueDate = COALESCE(?, dueDate), completed = COALESCE(?, completed) WHERE id = ?',
+      [card, dueDate !== undefined ? dueDate : null, completed, id]
     );
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Task not found' });
+      return res.status(404).json({ message: 'Card not found' });
     }
     const [rows] = await pool.query('SELECT * FROM tasks WHERE id = ?', [id]);
     const updatedTask = rows[0];
@@ -91,8 +91,8 @@ router.put('/:id', async (req, res) => {
       await sendEmail(
         USER_EMAIL,
         'Tarefa Concluída',
-        `A tarefa "${updatedTask.task}" foi marcada como concluída!`,
-        `<p>A tarefa <strong>"${updatedTask.task}"</strong> foi marcada como concluída!</p>`
+        `A tarefa "${updatedTask.card}" foi marcada como concluída!`,
+        `<p>A tarefa <strong>"${updatedTask.card}"</strong> foi marcada como concluída!</p>`
       );
     }
     res.json(updatedTask);
@@ -102,13 +102,13 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE a task
+// DELETE a card
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   try {
     const [rows] = await pool.query('SELECT * FROM tasks WHERE id = ?', [id]);
     if (rows.length === 0) {
-      return res.status(404).json({ message: 'Task not found' });
+      return res.status(404).json({ message: 'Card not found' });
     }
     const deletedTask = rows[0];
     await pool.query('DELETE FROM tasks WHERE id = ?', [id]);
@@ -118,11 +118,11 @@ router.delete('/:id', async (req, res) => {
       await sendEmail(
         USER_EMAIL,
         'Tarefa Removida',
-        `A tarefa "${deletedTask.task}" foi removida da sua lista.`,
-        `<p>A tarefa "<strong>${deletedTask.task}</strong>" foi removida da sua lista.</p>`
+        `A tarefa "${deletedTask.card}" foi removida da sua lista.`,
+        `<p>A tarefa "<strong>${deletedTask.card}</strong>" foi removida da sua lista.</p>`
       );
     }
-    res.status(200).json({ message: 'Task deleted successfully', task: deletedTask });
+    res.status(200).json({ message: 'Card deleted successfully', card: deletedTask });
   } catch (error) {
     res.status(500).json({ message: 'Erro ao deletar tarefa', error });
   }

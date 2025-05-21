@@ -12,9 +12,9 @@ const scheduleUpcomingTaskReminders = () => {
     try {
       const [tasks] = await pool.query('SELECT * FROM tasks');
       const now = new Date();
-      for (const task of tasks) {
-        if (!task.completed && task.dueDate) {
-          const dueDate = new Date(task.dueDate);
+      for (const card of tasks) {
+        if (!card.completed && card.dueDate) {
+          const dueDate = new Date(card.dueDate);
           const timeDifference = dueDate.getTime() - now.getTime();
           const oneHour = 60 * 60 * 1000;
 
@@ -25,9 +25,9 @@ const scheduleUpcomingTaskReminders = () => {
             if (USER_EMAIL) {
               await sendEmail(
                 USER_EMAIL,
-                `Lembrete: Tarefa Próxima - "${task.text}"`,
-                `A tarefa "${task.text}" está programada para ${new Date(task.dueDate).toLocaleString()}. Menos de uma hora restante!`,
-                `<p>Lembrete!</p><p>A tarefa "<strong>${task.text}</strong>" está programada para <strong>${new Date(task.dueDate).toLocaleString()}</strong>.</p><p>Menos de uma hora restante!</p>`
+                `Lembrete: Tarefa Próxima - "${card.text}"`,
+                `A tarefa "${card.text}" está programada para ${new Date(card.dueDate).toLocaleString()}. Menos de uma hora restante!`,
+                `<p>Lembrete!</p><p>A tarefa "<strong>${card.text}</strong>" está programada para <strong>${new Date(card.dueDate).toLocaleString()}</strong>.</p><p>Menos de uma hora restante!</p>`
               );
             }
           }
