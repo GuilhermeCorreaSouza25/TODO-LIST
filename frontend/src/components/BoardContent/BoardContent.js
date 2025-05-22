@@ -3,6 +3,9 @@ import Column from '../Column/Column';
 import { initData } from '../../actions/initData';
 import { useState, useEffect } from 'react';
 import _ from 'lodash';
+import { mapOrder } from '../../utilities/sort';
+import { Container, Draggable } from "react-smooth-dnd";
+// import { DragDropContext, Draggable } from '@hello-pangea/dnd';
 
 const BoardContent = () => {
 
@@ -14,11 +17,15 @@ const BoardContent = () => {
         const boardInitData = initData.boards.find(item => item.id === 'board-1');
         if(boardInitData) {
             setBoard(boardInitData);
-            boardInitData.columns.sort((a,b) => 
-            boardInitData.columnOrder.indexOf(a.id) - boardInitData.columnOrder.indexOf(b.id));
-            setColumns(boardInitData.columns);
+
+            // Sort columns
+            setColumns(mapOrder(boardInitData.columns, boardInitData.columnOrder, 'id'));
         }
-    })
+    },[]);
+
+    const onColumnDrop = (dropResult) => {
+        console.log('>>>>> inside onColumnDrop', dropResult);
+    }
 
     if(_.isEmpty(board)) {
         return (
@@ -31,12 +38,27 @@ const BoardContent = () => {
     return (
         <>
             <div className="board-columns">
-                {columns && columns.length > 0 && columns.map((column, index) => (
-                    <Column 
-                        key={column.id} 
-                        column={column} 
-                    />
-                ))}
+                <Container
+                    orientation="horizontal"
+                    onDrop={onColumnDrop}
+                    getChildPayload={index => columns[index]}
+                    dragHandleSelector=".column-drag-handle"
+                    dropPlaceholder={{
+                        animationDuration: 150,
+                        showOnTop: true,
+                        className: 'cards-drop-preview'
+                    }}
+                >{
+
+                    columns && columns.length > 0 && columns.map((column, index) => (
+                        <Draggable key={column.id}>
+                            <Column                     
+                                column={column} 
+                            />
+                        </Draggable>
+                    ))}
+
+                </Container>
             </div>
         </>
     )

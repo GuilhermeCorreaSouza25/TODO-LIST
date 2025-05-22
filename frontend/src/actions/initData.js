@@ -9,7 +9,7 @@ export const initData = {
                 {
                     id: 'column-1',
                     boardId: 'board-1',
-                    name: 'To do 1',
+                    name: 'Todo 1',
                     cardOrder: ['card-1', 'card-2', 'card-3', 'card-4', 'card-5', 'card-6', 'card-7'],
                     cards:[
                         {
@@ -66,7 +66,7 @@ export const initData = {
                 {
                     id: 'column-2',
                     boardId: 'board-1',
-                    name: 'To do 2',
+                    name: 'Todo 2',
                     cardOrder: ['card-8', 'card-9', 'card-10'],
                     cards:[
                         {
@@ -95,7 +95,7 @@ export const initData = {
                 {
                     id: 'column-3',
                     boardId: 'board-1',
-                    name: 'To do 3',
+                    name: 'Todo 3',
                     cardOrder: ['card-11', 'card-12', 'card-13'],
                     cards:[
                         {

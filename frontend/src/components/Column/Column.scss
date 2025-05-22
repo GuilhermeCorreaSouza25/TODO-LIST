@@ -20,6 +20,7 @@
         font-weight: bold;
         border-top-left-radius: $column-border-radius;
         border-top-right-radius: $column-border-radius;
+        cursor: pointer;
     }
 
     footer{
@@ -30,7 +31,7 @@
         border-bottom-right-radius: $column-border-radius;
     }
 
-    ul.card-list{
+    div.card-list{
         list-style-type: none;
         margin: 0;
         max-height: calc(100% - #{$column-header-height} - #{$column-footer-height});
