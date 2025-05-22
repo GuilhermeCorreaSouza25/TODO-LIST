@@ -5,18 +5,14 @@ import axios from 'axios';
 import Card from '../Card/Card';
 import { mapOrder } from '../../utilities/sort';
 import { Container, Draggable } from "react-smooth-dnd";
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const Column = (props) => {
-    const { column } = props;
+    const { column, onCardDrop } = props;
     const cards = mapOrder(column.cards, column.cardOrder, 'id');
 
-    const onCardDrop = (dropResult) =>{
-        console.log('>>>>> inside onCardDrop', dropResult);
-        // const newCards = [...cards];
-        // const [removed] = newCards.splice(dropResult.removedIndex, 1);
-        // newCards.splice(dropResult.addedIndex, 0, removed);
-        // setCards(newCards);
-    }
+
 
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -55,23 +51,14 @@ const Column = (props) => {
                 <div className="card-list">
                     <Container
                         groupName="col"
-                        // onDragStart={e => console.log("drag started", e)}
-                        // onDragEnd={e => console.log("drag end", e)}
-                        onDrop={onCardDrop}
+                        onDrop={(dropResult) => onCardDrop(dropResult, column.id)}
                         getChildPayload={index => cards[index]}
                         dragClass="card-ghost"
                         dropClass="card-ghost-drop"
-                        // onDragEnter={() => {
-                        // console.log("drag enter:", column.id);
-                        // }}
-                        // onDragLeave={() => {
-                        // console.log("drag leave:", column.id);
-                        // }}
-                        // onDropReady={p => console.log('Drop ready: ', p)}
                         dropPlaceholder={{                      
                         animationDuration: 150,
                         showOnTop: true,
-                        className: 'drop-preview' 
+                        className: 'card-drop-preview ' 
                         }}
                         dropPlaceholderAnimationDuration={200}
                         >
@@ -91,7 +78,11 @@ const Column = (props) => {
                             ))}
                         </Container>
                 </div>
-                <footer>Add another card</footer>
+                <footer>
+                    <div className='footer-action'>
+                        <FontAwesomeIcon icon={faPlus} /> Add another card
+                    </div>
+                </footer>
             </div>
 
             {loading && <p className="text-center text-gray-600">Carregando tarefas...</p>}

@@ -3,7 +3,7 @@
 
 .board-columns{
     display: flex;
-    margin: 0 $gap $gap;
+    margin: 0 $gap $gap 0;
     gap: $gap;
     overflow-x: auto;
 
@@ -19,5 +19,109 @@
       background-color: rgba(255, 255, 255, .24);
       border-radius: 5px solid $list-bg-color;
     }
+
+    .column-drop-preview {
+      background-color: rgba(150, 150, 200, 0.1);
+      border: 1px dashed #abc;
+      margin: 5px 45px 5px 5px;
+    }
+
+    .card-ghost {
+        transition: transform 0.18s ease;
+        transform: rotateZ(5deg)
+    }
+
+    .card-ghost-drop{
+        transition: transform 0.18s ease-in-out;
+        transform: rotateZ(0deg)
+    }
+
+    .add-new-column{
+        width: 250px;
+        height: 32px;
+        line-height: 32px;
+        padding: 4px 0 4px 15px;
+        cursor: pointer;
+        color: white;
+        margin-left: $gap;
+        font-size: 15px;
+        background-color: hsla(0, 0, 100, .24);
+        border-radius: $column-border-radius;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        svg {
+            font-size: 14px;
+            color: white;
+        }
+
+        &:hover {
+            background-color: hsla(0, 0, 100, .36);
+        }
+    }
+
+    .content-add-column{
+        width: 250px;
+        padding: 8px;
+        margin-left: $gap;
+        background-color: hsla(0, 0, 100, .36);
+        border-radius: $column-border-radius;
+
+        input.form-control {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #dfe1e6;
+            border-radius: 3px;
+            font-size: 14px;
+            background-color: white;
+            color: #172b4d;
+            transition: border-color 0.2s ease;
+
+            &:focus {
+                outline: none;
+                border-color: #4c9aff;
+            }
+
+            &::placeholder {
+                color: #6b778c;
+            }
+        }
+
+        .group-btn{
+            padding-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            button {
+                padding: 6px 12px;
+                border-radius: 3px;
+                border: none;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+                background-color: #5aac44;
+                color: white;
+                transition: background-color 0.2s ease;
+
+                &:hover {
+                    background-color: #61bd4f;
+                }
+            }
+
+            svg {
+                font-size: 24px;
+                color: #888;
+                cursor: pointer;
+                transition: color 0.2s ease;
+
+                &:hover {
+                    color: #333;
+                }
+            }
+        }
+    }
+
 
 }

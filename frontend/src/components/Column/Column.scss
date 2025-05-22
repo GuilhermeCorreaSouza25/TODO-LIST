@@ -3,8 +3,15 @@
 .column{
     flex: 0 0 auto;
     width: 300px;
-    height: calc(100% - #{$gap});
+    // height: calc(100% - #{$gap});
+    height: calc(100vh - 40px - 50px -#{$gap});
     // margin-left: $gap;
+
+    // &:not(:last-child){
+    //     margin-left: $gap;
+    // }
+
+    margin-left: $gap;
 
     > *{
         background-color: $list-bg-color;
@@ -29,6 +36,34 @@
         line-height: $column-footer-height;
         border-bottom-left-radius: $column-border-radius;
         border-bottom-right-radius: $column-border-radius;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        color: #888;
+        display: flex;
+        align-items: center;
+
+        &:hover {
+            background-color: darken($list-bg-color, 5%);
+        }
+
+        svg {
+            font-size: 14px;
+            color: #6b778c;
+            margin-right: 8px;
+            transition: color 0.2s ease;
+        }
+
+        &:hover svg {
+            color: #333;
+        }
+
+        .footer-action{
+            margin-left: 5px;
+            cursor:pointer;
+            &:hover{
+                color: #333;
+            }
+        }
     }
 
     div.card-list{
@@ -51,5 +86,24 @@
         border-radius: 8px;
         background-clip: padding-box;
         }
+
+        .card-ghost {
+            transition: transform 0.18s ease;
+            transform: rotateZ(5deg);
+            font-weight: bold;
+        }
+
+        .card-ghost-drop{
+            transition: transform 0.18s ease-in-out;
+            transform: rotateZ(0deg);
+            font-weight: bold;
+        }
+
+        .card-drop-preview {
+            background-color: rgba(150, 150, 200, 0.1);
+            border: 1px dashed #abc;
+            margin: 5px;
+        }
+
     }
 }
