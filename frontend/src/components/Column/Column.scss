@@ -28,6 +28,66 @@
         border-top-left-radius: $column-border-radius;
         border-top-right-radius: $column-border-radius;
         cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .column-name {
+            flex: 1;
+        }
+
+        .column-dropdown {
+            margin-right: 8px;
+            
+            .dropdown-toggle {
+                padding: 0;
+                background: none;
+                border: none;
+                color: #888;
+                
+                &:hover {
+                    color: #333;
+                }
+                
+                &::after {
+                    display: none;
+                }
+            }
+        }
+    }
+
+    .column-drag-handle {
+        display: flex;
+        padding-right: 3px;
+
+        .column.title {
+            width: 90%;
+        }
+
+        .column-dropdown{
+            width: 10%;;
+
+            .dropdown-toggle{
+                padding: 0 7px;
+                &::after{
+                    content: '...';
+                    border: none !important;
+                    outline: none !important;
+                    box-shadow: none !important;
+                }
+
+                &:hover{
+                    background-color: #091e4214;
+                }
+
+                &:focus{
+                    outline: none !important;
+                    box-shadow: none !important;
+                }
+            }
+        }
+
+
     }
 
     footer{

@@ -5,14 +5,19 @@ import axios from 'axios';
 import Card from '../Card/Card';
 import { mapOrder } from '../../utilities/sort';
 import { Container, Draggable } from "react-smooth-dnd";
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Dropdown from 'react-bootstrap/Dropdown';
+import ConfirmModal from '../Common/ConfirmModal';
 
 const Column = (props) => {
     const { column, onCardDrop } = props;
     const cards = mapOrder(column.cards, column.cardOrder, 'id');
 
-
+    const [isShowModalDelete, setShowModalDelete] = useState(false);
+    const toggleModal = () => {
+        setShowModalDelete(!isShowModalDelete);
+    }
 
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -44,10 +49,38 @@ const Column = (props) => {
         fetchTasks();
     }, [fetchTasks]);
 
+    const onModalAction = (type) => {
+        console.log(type);
+    }
     return (
         <>
             <div className="column">
-                <header className="column-drag-handle">{column.name}</header>
+                <header className="column-drag-handle">
+                    <div className="column-name">{column.name}</div>
+                    <div className="column-dropdown">
+                        <Dropdown>
+                            <Dropdown.Toggle 
+                                variant="" 
+                                id="dropdown-basic"
+                                size='sm'
+                            >
+                                <FontAwesomeIcon icon={faEllipsisH} />
+                            </Dropdown.Toggle>
+
+                            <Dropdown.Menu>
+                                <Dropdown.Item onClick={() => console.log('Editar coluna:', column.id)}>
+                                    Editar coluna
+                                </Dropdown.Item>
+                                <Dropdown.Item onClick={toggleModal}>
+                                    Excluir coluna
+                                </Dropdown.Item>
+                                <Dropdown.Item onClick={() => console.log('Limpar coluna:', column.id)}>
+                                    Limpar coluna
+                                </Dropdown.Item>
+                            </Dropdown.Menu>
+                        </Dropdown>
+                    </div>
+                </header>
                 <div className="card-list">
                     <Container
                         groupName="col"
@@ -84,7 +117,12 @@ const Column = (props) => {
                     </div>
                 </footer>
             </div>
-
+            <ConfirmModal 
+                show={isShowModalDelete}
+                title={"Remove a column"}
+                content={`Are you sure you want to remove the column "${column.name}"?`}
+                onAction={onModalAction}
+            />
             {loading && <p className="text-center text-gray-600">Carregando tarefas...</p>}
             {error && <p className="text-center text-red-500 bg-red-100 p-3 rounded-md">{error}</p>}
         </>
