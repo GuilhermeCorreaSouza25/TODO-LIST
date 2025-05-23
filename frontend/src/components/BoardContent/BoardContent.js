@@ -93,6 +93,17 @@ const BoardContent = () => {
         )
     }
 
+    const onUpdateColumn = (newColumn) => {
+        const columnIdUpdate = newColumn.id;
+        const ncols = [...columns];
+        const columnIndex = ncols.findIndex(item => item.id === columnIdUpdate);
+        if(newColumn._destroy) {
+            ncols.splice(columnIndex, 1);
+        }else{
+            ncols[columnIndex] = newColumn;
+        }
+        setColumns(ncols);
+    }
     return (
         <>
             <div className="board-columns">
@@ -113,6 +124,7 @@ const BoardContent = () => {
                             <Column                     
                                 column={column}
                                 onCardDrop={onCardDrop}
+                                onUpdateColumn={onUpdateColumn}
                             />
                         </Draggable>
                     ))}

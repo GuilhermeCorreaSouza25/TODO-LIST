@@ -22,7 +22,7 @@
     header{
         padding-left: 15px;
         height: $column-header-height;
-        line-height: $column-header-height;
+        // line-height: $column-header-height;
         font-size: 16px;
         font-weight: bold;
         border-top-left-radius: $column-border-radius;
@@ -59,6 +59,8 @@
     .column-drag-handle {
         display: flex;
         padding-right: 3px;
+        padding-top: 5px;
+        padding-left: 10px;
 
         .column.title {
             width: 90%;
@@ -68,7 +70,7 @@
             width: 10%;;
 
             .dropdown-toggle{
-                padding: 0 7px;
+                padding: 2px 7px;
                 &::after{
                     content: '...';
                     border: none !important;
@@ -88,6 +90,43 @@
         }
 
 
+    }
+
+    .add-new-card{
+        padding-bottom: 10px;
+        .group-btn{
+            padding-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            button {
+                padding: 6px 12px;
+                border-radius: 3px;
+                border: none;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+                // background-color: #5aac44;
+                color: white;
+                transition: background-color 0.2s ease;
+
+                &:hover {
+                    // background-color: #61bd4f;
+                }
+            }
+
+            svg {
+                font-size: 24px;
+                color: #b3b3b3;
+                cursor: pointer;
+                transition: color 0.2s ease;
+
+                &:hover {
+                    color: #333;
+                }
+            }
+        }
     }
 
     footer{

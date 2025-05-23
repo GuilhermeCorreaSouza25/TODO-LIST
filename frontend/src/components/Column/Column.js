@@ -5,25 +5,36 @@ import axios from 'axios';
 import Card from '../Card/Card';
 import { mapOrder } from '../../utilities/sort';
 import { Container, Draggable } from "react-smooth-dnd";
-import { faPlus, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faEllipsisH, faClose } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Dropdown from 'react-bootstrap/Dropdown';
 import ConfirmModal from '../Common/ConfirmModal';
+import Form from 'react-bootstrap/Form';
+import { MODAL_ACTION_CLOSE, MODAL_ACTION_CONFIRM } from '../../utilities/constant';
+import { useRef } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 const Column = (props) => {
-    const { column, onCardDrop } = props;
+    const { column, onCardDrop, onUpdateColumn } = props;
     const cards = mapOrder(column.cards, column.cardOrder, 'id');
 
     const [isShowModalDelete, setShowModalDelete] = useState(false);
-    const toggleModal = () => {
-        setShowModalDelete(!isShowModalDelete);
-    }
+    const [nomeColumn, setNameColumn] = useState(column.name);
+    const [isFirstClick, setIsFirstClick] = useState(true);
+    const inputRef = useRef(null);
+    const [isShowAddNewCard, setIsShowAddNewCard] = useState(false);
+    const [valueTextArea, setValueTextArea] = useState('');
+    const textAreaRef = useRef(null);
+    
 
+    // State to manage tasks
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const apiUrl = process.env.REACT_APP_API_URL;
 
+    // Fetch tasks from the backend
+    // using useCallback to memoize the function
     const fetchTasks = useCallback(async () => {
         try {
             setLoading(true);
@@ -49,14 +60,97 @@ const Column = (props) => {
         fetchTasks();
     }, [fetchTasks]);
 
+    useEffect(() => {
+        if(isShowAddNewCard && textAreaRef && textAreaRef.current) {
+            textAreaRef.current.focus();
+        }
+    }, [isShowAddNewCard]);
+
+    useEffect(() => {
+        if(column && column.name) {
+            setNameColumn(column.name);
+        }
+    },[column])
+
+    const toggleModal = () => {
+        setShowModalDelete(!isShowModalDelete);
+    }
+
     const onModalAction = (type) => {
-        console.log(type);
+        if(type === MODAL_ACTION_CLOSE) {
+
+        }
+        if (type === MODAL_ACTION_CONFIRM) {
+            const newColumn = {
+                ...column,
+                _destroy: true
+            };
+            onUpdateColumn(newColumn);
+        }
+        toggleModal();
+    }
+
+    const selectAllText = (event) => {
+        setIsFirstClick(false);
+        if (isFirstClick) {
+            event.target.select();
+        }else{
+            inputRef.current.setSelectionRange(nomeColumn.length, nomeColumn.length);
+        }
+       
+        
+    }
+
+    const handleClickOutside = () =>{
+        setIsFirstClick(false);
+        const newColumn = {
+            ...column,
+            name: nomeColumn,
+            _destroy: false
+        };
+        onUpdateColumn(newColumn);
+    }
+
+    const handleAddNewCard = () => {
+        if(!valueTextArea) {
+            alert('Please enter a card name');
+            return;
+        }
+
+        const newCard = {
+            id: uuidv4(),
+            boardId: column.boardId,
+            columnId: column.id,
+            title: valueTextArea,
+            image: null
+        };
+
+        let newColumn = {...column};
+        newColumn.cards = [...newColumn.cards, newCard];
+        newColumn.cardOrder = newColumn.cards.map((card) => card.id);
+        onUpdateColumn(newColumn);
+        setValueTextArea('');
+        setIsShowAddNewCard(false);
     }
     return (
         <>
             <div className="column">
                 <header className="column-drag-handle">
-                    <div className="column-name">{column.name}</div>
+                    <div className="column-name">
+                        <Form.Control
+                            size="sm"
+                            type="text"
+                            value= {nomeColumn}
+                            className='customize-input-column'
+                            onClick={selectAllText}
+                            onChange={(event)=> setNameColumn(event.target.value)}
+                            spellCheck="false"
+                            onBlur={handleClickOutside}
+                            onMouseDown={(event) => event.preventDefault()}
+                            ref={inputRef}
+                            
+                        />
+                        </div>
                     <div className="column-dropdown">
                         <Dropdown>
                             <Dropdown.Toggle 
@@ -109,18 +203,49 @@ const Column = (props) => {
                                     </div>
                                 </Draggable>
                             ))}
-                        </Container>
+                    </Container>
+                    {isShowAddNewCard === true &&
+                        <div className="add-new-card">
+                            <textarea
+                                rows={2}
+                                className='form-control'
+                                placeholder="Enter a name for this card..."
+                                ref={textAreaRef}
+                                value={valueTextArea}
+                                onChange={(event) => setValueTextArea(event.target.value)}
+                            ></textarea>
+                            <div className="group-btn">
+                                <button 
+                                    className='btn btn-primary btn-sm'
+                                    onClick={() => handleAddNewCard()}
+                                >Add card</button>
+                                <FontAwesomeIcon 
+                                    icon={faClose}
+                                    className='add-icon'
+                                    onClick={() => setIsShowAddNewCard(false)}
+                                />
+                            </div>
+                        </div>
+                    }
                 </div>
-                <footer>
-                    <div className='footer-action'>
-                        <FontAwesomeIcon icon={faPlus} /> Add another card
-                    </div>
-                </footer>
+                {isShowAddNewCard === false &&
+                    <footer>
+                        <div 
+                            className='footer-action' 
+                            onClick={() => setIsShowAddNewCard(true)}
+                        >
+                            <FontAwesomeIcon 
+                                icon={faPlus} 
+                            /> 
+                            Add another card
+                        </div>
+                    </footer>
+                }
             </div>
             <ConfirmModal 
                 show={isShowModalDelete}
                 title={"Remove a column"}
-                content={`Are you sure you want to remove the column "${column.name}"?`}
+                content={`Are you sure you want to remove the column: <b>${column.name}</b>?`}
                 onAction={onModalAction}
             />
             {loading && <p className="text-center text-gray-600">Carregando tarefas...</p>}

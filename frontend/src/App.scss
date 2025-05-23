@@ -19,4 +19,14 @@ body {
   background-color: $board-bg-color;
   color: $app-main-color;
 
+  .customize-input-column{
+    border:none;
+    cursor:pointer;
+    
+    &:focus{
+      outline: none !important;
+      box-shadow: none !important;
+    }
+    background-color: inherit;
+  }
 }
