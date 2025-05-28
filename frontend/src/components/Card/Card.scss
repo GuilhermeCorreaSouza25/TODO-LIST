@@ -32,6 +32,30 @@
                 word-break: break-word;
                 line-height: 1.4;
                 flex: 1;
+                cursor: pointer;
+                transition: all 0.3s ease;
+
+                &:hover {
+                    color: $primary-light;
+                }
+
+                .card-title-input {
+                    width: 100%;
+                    background: transparent;
+                    border: 2px solid $primary-light;
+                    border-radius: $border-radius-sm;
+                    padding: $spacing-xs;
+                    font-size: inherit;
+                    font-weight: inherit;
+                    color: inherit;
+                    transition: all 0.3s ease;
+
+                    &:focus {
+                        outline: none;
+                        background-color: rgba($primary-color, 0.1);
+                        box-shadow: 0 0 0 2px rgba($primary-color, 0.2);
+                    }
+                }
             }
 
             .card-actions {

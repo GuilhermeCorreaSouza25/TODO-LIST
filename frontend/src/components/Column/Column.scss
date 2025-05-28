@@ -13,10 +13,10 @@
   border: 1px solid $border-color;
 
   .column-header {
-    padding: $spacing-sm;
+    padding: $spacing-md;
     display: flex;
     flex-direction: column;
-    gap: $spacing-sm;
+    gap: $spacing-md;
     border-bottom: 1px solid $border-color;
     background-color: rgba($primary-color, 0.15);
     border-radius: $border-radius-md $border-radius-md 0 0;
@@ -26,6 +26,9 @@
       align-items: center;
       justify-content: space-between;
       width: 100%;
+      padding: $spacing-xs;
+      background-color: rgba($primary-color, 0.1);
+      border-radius: $border-radius-sm;
 
       .column-title {
         font-size: clamp(14px, 2vw, 16px);
@@ -37,6 +40,12 @@
         flex: 1;
         min-width: 0;
         padding: $spacing-xs;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+          color: $primary-light;
+        }
 
         .column-icon {
           color: $primary-light;
@@ -55,7 +64,7 @@
           padding: $spacing-xs;
           border-radius: $border-radius-sm;
           margin: -$spacing-xs;
-          transition: all $transition-speed;
+          transition: all 0.3s ease;
 
           &:hover {
             background-color: rgba($primary-color, 0.1);
@@ -70,86 +79,81 @@
         }
       }
 
-      .column-actions {
-        display: flex;
-        gap: $spacing-xs;
-        flex-shrink: 0;
-        padding: $spacing-xs;
-
-        button {
+      .column-menu {
+        position: relative;
+        
+        .menu-trigger {
           background: none;
           border: none;
-          padding: 6px;
+          padding: $spacing-xs;
           cursor: pointer;
           color: $text-muted;
-          transition: background-color $transition-speed, transform $transition-speed;
+          transition: all 0.3s ease;
           border-radius: $border-radius-sm;
           display: flex;
           align-items: center;
           justify-content: center;
-
-          svg {
-            font-size: 16px;
-          }
+          width: 32px;
+          height: 32px;
 
           &:hover {
             color: $primary-light;
             background-color: rgba($primary-color, 0.2);
-            transform: translateY(-1px);
           }
 
-          &:active {
-            transform: translateY(0);
-          }
-
-          &.delete:hover {
-            color: $error-color;
-            background-color: rgba($error-color, 0.2);
+          svg {
+            font-size: 16px;
           }
         }
-      }
-    }
 
-    .column-actions-expanded {
-      display: flex;
-      flex-direction: column;
-      gap: $spacing-xs;
-      padding: $spacing-xs;
-      background-color: rgba($primary-color, 0.1);
-      border-radius: $border-radius-sm;
-      margin-top: $spacing-xs;
+        .column-actions {
+          position: absolute;
+          top: 100%;
+          right: 0;
+          background-color: $column-bg-color;
+          border-radius: $border-radius-sm;
+          box-shadow: $shadow-md;
+          min-width: 200px;
+          z-index: 1000;
+          margin-top: $spacing-xs;
+          border: 1px solid $border-color;
+          display: none;
 
-      button {
-        width: 100%;
-        background: none;
-        border: none;
-        padding: $spacing-sm;
-        cursor: pointer;
-        color: $text-muted;
-        transition: background-color $transition-speed, transform $transition-speed;
-        border-radius: $border-radius-sm;
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        gap: $spacing-sm;
+          &.show {
+            display: block;
+          }
 
-        svg {
-          font-size: 16px;
-        }
+          button {
+            width: 100%;
+            background: none;
+            border: none;
+            padding: $spacing-sm;
+            cursor: pointer;
+            color: $text-muted;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: $spacing-sm;
+            font-size: 14px;
+            font-weight: 500;
 
-        &:hover {
-          color: $primary-light;
-          background-color: rgba($primary-color, 0.2);
-          transform: translateY(-1px);
-        }
+            svg {
+              font-size: 16px;
+              width: 20px;
+              text-align: center;
+            }
 
-        &:active {
-          transform: translateY(0);
-        }
+            &:hover {
+              color: $primary-light;
+              background-color: rgba($primary-color, 0.2);
+            }
 
-        &.delete:hover {
-          color: $error-color;
-          background-color: rgba($error-color, 0.2);
+            &.delete:hover {
+              color: $error-color;
+              background-color: rgba($error-color, 0.2);
+            }
+          }
         }
       }
     }

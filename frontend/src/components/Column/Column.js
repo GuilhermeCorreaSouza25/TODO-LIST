@@ -5,7 +5,7 @@ import axios from 'axios';
 import Card from '../Card/Card';
 import { mapOrder } from '../../utilities/sort';
 import { Container, Draggable } from "react-smooth-dnd";
-import { faPlus, faEllipsisH, faClose, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faEllipsisH, faClose, faSpinner, faEdit, faTrash, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Dropdown from 'react-bootstrap/Dropdown';
 import ConfirmModal from '../Common/ConfirmModal';
@@ -30,6 +30,7 @@ const Column = (props) => {
     const [isShowAddNewCard, setIsShowAddNewCard] = useState(false);
     const [valueTextArea, setValueTextArea] = useState('');
     const textAreaRef = useRef(null);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     
 
     const apiUrl = process.env.REACT_APP_API_URL;
@@ -112,25 +113,18 @@ const Column = (props) => {
         setIsEditing(true);
     }
 
-    const handleClickOutside = async () => {
-        if (!isEditing) return;
-        
-        setIsEditing(false);
-        try {
-            await axios.put(`${apiUrl}/columns/${column.id}`, {
-                name: nomeColumn
-            });
-            const newColumn = {
-                ...column,
-                name: nomeColumn,
-                _destroy: false
-            };
-            onUpdateColumn(newColumn);
-        } catch (error) {
-            console.error('Erro ao atualizar nome da coluna:', error);
-            alert('Erro ao atualizar nome da coluna');
+    const handleClickOutside = (event) => {
+        if (isMenuOpen && !event.target.closest('.column-menu')) {
+            setIsMenuOpen(false);
         }
     }
+
+    useEffect(() => {
+        document.addEventListener('click', handleClickOutside);
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, [isMenuOpen]);
 
     const handleAddNewCard = async () => {
         if(!valueTextArea) {
@@ -161,63 +155,83 @@ const Column = (props) => {
         }
     }
 
+    const toggleMenu = () => {
+        setIsMenuOpen(!isMenuOpen);
+    }
+
+    const handleEditCard = async (updatedCard) => {
+        const newColumn = { ...column };
+        const cardIndex = newColumn.cards.findIndex(c => c.id === updatedCard.id);
+        if (cardIndex !== -1) {
+            newColumn.cards[cardIndex] = updatedCard;
+            onUpdateColumn(newColumn);
+        }
+    };
+
+    const handleDeleteCard = async (cardToDelete) => {
+        try {
+            await axios.delete(`${apiUrl}/cards/${cardToDelete.id}`);
+            const newColumn = { ...column };
+            newColumn.cards = newColumn.cards.filter(c => c.id !== cardToDelete.id);
+            onUpdateColumn(newColumn);
+        } catch (error) {
+            console.error('Erro ao deletar card:', error);
+            alert('Erro ao deletar card');
+        }
+    };
+
     return (
         <>
             <div className="column">
-                <header className="column-drag-handle">
-                    <div className="column-name">
-                        {isEditing ? (
-                            <Form.Control
-                                size="sm"
-                                type="text"
-                                value={nomeColumn}
-                                className='customize-input-column'
-                                onChange={(event)=> setNameColumn(event.target.value)}
-                                spellCheck="false"
-                                onBlur={handleClickOutside}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        handleClickOutside();
-                                    }
-                                }}
-                                ref={inputRef}
-                            />
-                        ) : (
-                            <div 
-                                className="column-title" 
-                                onClick={handleEditColumn}
-                            >
-                                {nomeColumn}
-                            </div>
-                        )}
-                    </div>
-                    
-                    <Dropdown>
-                        <Dropdown.Toggle 
-                            variant="" 
-                            id="dropdown-basic"
-                            size='sm'
-                            disabled={isLoading}
-                        >
-                            {isLoading ? (
-                                <FontAwesomeIcon icon={faSpinner} spin />
+                <header className="column-header">
+                    <div className="column-title-container">
+                        <div className="column-title">
+                            {isEditing ? (
+                                <Form.Control
+                                    size="sm"
+                                    type="text"
+                                    value={nomeColumn}
+                                    className='customize-input-column'
+                                    onChange={(event)=> setNameColumn(event.target.value)}
+                                    spellCheck="false"
+                                    onBlur={handleClickOutside}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            handleClickOutside();
+                                        }
+                                    }}
+                                    ref={inputRef}
+                                />
                             ) : (
-                                <FontAwesomeIcon icon={faEllipsisH} />
+                                <div onClick={handleEditColumn}>
+                                    {nomeColumn}
+                                </div>
                             )}
-                        </Dropdown.Toggle>
-
-                        <Dropdown.Menu>
-                            <Dropdown.Item onClick={handleEditColumn}>
-                                Editar coluna
-                            </Dropdown.Item>
-                            <Dropdown.Item onClick={toggleModal}>
-                                Excluir coluna
-                            </Dropdown.Item>
-                            <Dropdown.Item onClick={toggleClearModal}>
-                                Limpar coluna
-                            </Dropdown.Item>
-                        </Dropdown.Menu>
-                    </Dropdown>
+                        </div>
+                        <div className="column-menu">
+                            <button 
+                                className="menu-trigger"
+                                onClick={toggleMenu}
+                                title="Opções da coluna"
+                            >
+                                <FontAwesomeIcon icon={faEllipsisH} />
+                            </button>
+                            <div className={`column-actions ${isMenuOpen ? 'show' : ''}`}>
+                                <button onClick={handleEditColumn}>
+                                    <FontAwesomeIcon icon={faEdit} />
+                                    Editar coluna
+                                </button>
+                                <button onClick={toggleClearModal}>
+                                    <FontAwesomeIcon icon={faTrash} />
+                                    Limpar coluna
+                                </button>
+                                <button className="delete" onClick={toggleModal}>
+                                    <FontAwesomeIcon icon={faTrashAlt} />
+                                    Excluir coluna
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </header>
                 
                 <Container
@@ -236,7 +250,12 @@ const Column = (props) => {
                     {cards && cards.length > 0 && cards.map((card, index) => {
                         return (
                             <Draggable key={card.id}>
-                                <Card card={card} isFirstCard={index === 0} />
+                                <Card
+                                    card={card}
+                                    index={index}
+                                    onEdit={handleEditCard}
+                                    onDelete={handleDeleteCard}
+                                />
                             </Draggable>
                         )
                     })}

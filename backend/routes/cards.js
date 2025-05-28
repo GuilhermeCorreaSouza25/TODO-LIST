@@ -58,20 +58,26 @@ router.post('/', async (req, res) => {
 // PUT update a card
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { title, description, dueDate, completed, columnId } = req.body;
+  const { title, description, dueDate, completed, columnId, boardId } = req.body;
   try {
-    const [result] = await pool.query(
-      'UPDATE cards SET title = COALESCE(?, title), description = COALESCE(?, description), dueDate = COALESCE(?, dueDate), completed = COALESCE(?, completed), columnId = COALESCE(?, columnId) WHERE id = ?',
-      [title, description, dueDate, completed, columnId, id]
-    );
-    if (result.affectedRows === 0) {
+    // Primeiro, vamos verificar se o card existe
+    const [existingCard] = await pool.query('SELECT * FROM cards WHERE id = ?', [id]);
+    if (existingCard.length === 0) {
       return res.status(404).json({ message: 'Card não encontrado' });
     }
+
+    // Atualizar apenas o título
+    const [result] = await pool.query(
+      'UPDATE cards SET title = ? WHERE id = ?',
+      [title, id]
+    );
+
     const [rows] = await pool.query('SELECT * FROM cards WHERE id = ?', [id]);
     const updatedCard = rows[0];
     res.json(updatedCard);
   } catch (error) {
-    res.status(500).json({ message: 'Erro ao atualizar card', error });
+    console.error('Erro ao atualizar card:', error);
+    res.status(500).json({ message: 'Erro ao atualizar card', error: error.message });
   }
 });
 

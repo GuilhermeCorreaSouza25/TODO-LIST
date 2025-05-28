@@ -314,6 +314,7 @@ const BoardContent = () => {
                                     onDeleteColumn={handleDeleteColumn}
                                     onClearColumn={handleClearColumn}
                                     onUpdateColumnName={handleUpdateColumnName}
+                                    onUpdateColumn={onUpdateColumn}
                                 />
                             ))}
                             {provided.placeholder}
@@ -322,16 +323,17 @@ const BoardContent = () => {
                                     className="add-column-button"
                                     onClick={handleAddColumn}
                                     disabled={isAddingColumn}
+                                    title="Adicionar nova coluna"
                                 >
                                     {isAddingColumn ? (
                                         <>
                                             <FontAwesomeIcon icon={faSpinner} spin className="spinner" />
-                                            Adicionando...
+                                            <span>Adicionando...</span>
                                         </>
                                     ) : (
                                         <>
                                             <FontAwesomeIcon icon={faPlus} />
-                                            Adicionar coluna
+                                            <span>Adicionar coluna</span>
                                         </>
                                     )}
                                 </button>
