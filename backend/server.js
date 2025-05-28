@@ -3,6 +3,8 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const taskRoutes = require('./routes/tasks').router; // Acessa o router exportado
 const { scheduleUpcomingTaskReminders } = require('./services/notificationService');
+const boardRoutes = require('./routes/boards').router;
+const columnRoutes = require('./routes/columns').router;
 
 dotenv.config();
 
@@ -15,6 +17,8 @@ app.use(express.json()); // Para parsear JSON no corpo das requisições
 
 // Routes
 app.use('/api/tasks', taskRoutes);
+app.use('/api/boards', boardRoutes);
+app.use('/api/columns', columnRoutes);
 
 app.get('/', (req, res) => {
   res.send('Backend da To-Do List está rodando!');

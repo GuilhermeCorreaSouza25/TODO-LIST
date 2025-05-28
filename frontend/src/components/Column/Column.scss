@@ -3,9 +3,13 @@
 .column{
     flex: 0 0 auto;
     width: 300px;
-    // height: calc(100% - #{$gap});
-    height: calc(100vh - 40px - 50px -#{$gap});
-    // margin-left: $gap;
+    margin-right: 8px;
+    height: fit-content;
+    max-height: calc(100vh - 24px - 58px);
+    display: flex;
+    flex-direction: column;
+    background-color: #ebecf0;
+    border-radius: 3px;
 
     // &:not(:last-child){
     //     margin-left: $gap;
@@ -19,77 +23,74 @@
         padding: 0 8px;
     }
 
-    header{
-        padding-left: 15px;
-        height: $column-header-height;
-        // line-height: $column-header-height;
-        font-size: 16px;
-        font-weight: bold;
-        border-top-left-radius: $column-border-radius;
-        border-top-right-radius: $column-border-radius;
-        cursor: pointer;
+    .column-drag-handle {
+        padding: 8px;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        height: $column-header-height;
+        border-top-left-radius: $column-border-radius;
+        border-top-right-radius: $column-border-radius;
 
         .column-name {
             flex: 1;
+            margin-right: 8px;
+
+            .column-title {
+                font-weight: bold;
+                cursor: pointer;
+                padding: 4px 8px;
+                border-radius: 3px;
+                transition: background-color 0.2s;
+
+                &:hover {
+                    background-color: rgba(0, 0, 0, 0.1);
+                }
+            }
+
+            .customize-input-column {
+                font-weight: bold;
+                background-color: #fff;
+                border: 2px solid #0079bf;
+                box-shadow: 0 0 0 2px rgba(0, 121, 191, 0.2);
+                
+                &:focus {
+                    box-shadow: 0 0 0 2px rgba(0, 121, 191, 0.4);
+                }
+
+                &:disabled {
+                    background-color: #f4f5f7;
+                    border-color: #dfe1e6;
+                    cursor: not-allowed;
+                }
+            }
         }
 
         .column-dropdown {
-            margin-right: 8px;
-            
             .dropdown-toggle {
-                padding: 0;
-                background: none;
-                border: none;
-                color: #888;
-                
-                &:hover {
-                    color: #333;
-                }
-                
+                padding: 2px 7px;
+                border-radius: 3px;
+                transition: background-color 0.2s;
+
                 &::after {
                     display: none;
                 }
-            }
-        }
-    }
 
-    .column-drag-handle {
-        display: flex;
-        padding-right: 3px;
-        padding-top: 5px;
-        padding-left: 10px;
-
-        .column.title {
-            width: 90%;
-        }
-
-        .column-dropdown{
-            width: 10%;;
-
-            .dropdown-toggle{
-                padding: 2px 7px;
-                &::after{
-                    content: '...';
-                    border: none !important;
-                    outline: none !important;
-                    box-shadow: none !important;
-                }
-
-                &:hover{
+                &:hover {
                     background-color: #091e4214;
                 }
 
-                &:focus{
+                &:focus {
                     outline: none !important;
                     box-shadow: none !important;
                 }
+
+                svg {
+                    font-size: 16px;
+                    color: #6b778c;
+                }
             }
         }
-
-
     }
 
     .add-new-card{
@@ -107,13 +108,8 @@
                 cursor: pointer;
                 font-size: 14px;
                 font-weight: 500;
-                // background-color: #5aac44;
                 color: white;
                 transition: background-color 0.2s ease;
-
-                &:hover {
-                    // background-color: #61bd4f;
-                }
             }
 
             svg {
