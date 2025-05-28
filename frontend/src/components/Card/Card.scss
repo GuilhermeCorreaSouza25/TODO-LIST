@@ -1,25 +1,331 @@
 @import '../../_settings.scss';
 
-div.card-item{
-    background-color: white;
-    padding: $gap;
-    border-radius: $card-border-radius;
-    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
-    cursor: pointer;
+.card {
+    background-color: $card-bg-color;
+    border-radius: $border-radius-sm;
+    box-shadow: $shadow-sm;
+    margin-bottom: $spacing-sm;
+    border: 1px solid $border-color;
+    transition: all $transition-speed;
 
-    // &:not(:last-child){
-    //     margin-bottom: $gap;
-    // }
+    &:hover {
+        box-shadow: $shadow-md;
+        transform: translateY(-2px);
+        border-color: rgba($primary-color, 0.3);
+    }
 
-    margin-bottom: $gap;
-    
-    img {
-        display: block;
+    .card-content {
+        padding: $spacing-md;
+        cursor: pointer;
 
-        width: calc(100% + 2 * #{$gap});
-        margin: -$gap 0 0 (-$gap);
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: $spacing-md;
+            margin-bottom: $spacing-sm;
 
-        border-top-left-radius: $card-border-radius;
-        border-top-right-radius: $card-border-radius;
+            .card-title {
+                font-size: 15px;
+                font-weight: 600;
+                color: $text-primary;
+                word-break: break-word;
+                line-height: 1.4;
+                flex: 1;
+            }
+
+            .card-actions {
+                position: relative;
+                display: flex;
+                gap: $spacing-xs;
+                flex-shrink: 0;
+
+                button {
+                    background: none;
+                    border: none;
+                    padding: 6px;
+                    cursor: pointer;
+                    color: $text-muted;
+                    transition: all $transition-speed;
+                    border-radius: $border-radius-sm;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+
+                    svg {
+                        font-size: 16px;
+                    }
+
+                    &:hover {
+                        color: $primary-light;
+                        background-color: rgba($primary-color, 0.2);
+                        transform: translateY(-1px);
+                    }
+
+                    &:active {
+                        transform: translateY(0);
+                    }
+
+                    &.delete:hover {
+                        color: $error-color;
+                        background-color: rgba($error-color, 0.2);
+                    }
+                }
+
+                .card-actions-expanded {
+                    position: absolute;
+                    top: 100%;
+                    right: 0;
+                    background-color: $column-bg-color;
+                    border: 1px solid $border-color;
+                    border-radius: $border-radius-sm;
+                    box-shadow: $shadow-md;
+                    z-index: 10;
+                    min-width: 150px;
+                    margin-top: $spacing-xs;
+
+                    button {
+                        width: 100%;
+                        padding: $spacing-sm;
+                        justify-content: flex-start;
+                        gap: $spacing-sm;
+                        border-radius: 0;
+
+                        &:first-child {
+                            border-radius: $border-radius-sm $border-radius-sm 0 0;
+                        }
+
+                        &:last-child {
+                            border-radius: 0 0 $border-radius-sm $border-radius-sm;
+                        }
+
+                        &:not(:last-child) {
+                            border-bottom: 1px solid $border-color;
+                        }
+                    }
+                }
+            }
+        }
+
+        .card-description {
+            font-size: 13px;
+            color: $text-muted;
+            margin-bottom: $spacing-sm;
+            word-break: break-word;
+            line-height: 1.5;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: $spacing-sm;
+            margin-top: $spacing-md;
+            padding-top: $spacing-sm;
+            border-top: 1px solid $border-color;
+
+            .card-date {
+                font-size: 12px;
+                color: $text-muted;
+                padding: 4px 8px;
+                background-color: rgba($primary-color, 0.1);
+                border-radius: $border-radius-sm;
+                display: flex;
+                align-items: center;
+                gap: $spacing-xs;
+
+                &.overdue {
+                    color: $error-color;
+                    background-color: rgba($error-color, 0.1);
+                }
+
+                &.due-soon {
+                    color: $warning-color;
+                    background-color: rgba($warning-color, 0.1);
+                }
+
+                svg {
+                    font-size: 12px;
+                }
+            }
+
+            .card-attachments {
+                font-size: 12px;
+                color: $text-muted;
+                padding: 4px 8px;
+                background-color: rgba($primary-color, 0.1);
+                border-radius: $border-radius-sm;
+                display: flex;
+                align-items: center;
+                gap: $spacing-xs;
+
+                svg {
+                    font-size: 12px;
+                }
+            }
+        }
+    }
+}
+
+.card-drop-preview {
+    background-color: rgba($primary-color, 0.15);
+    border: 2px dashed $primary-light;
+    border-radius: $border-radius-sm;
+    margin: 5px;
+}
+
+.card-ghost {
+    opacity: 0.5;
+    background: rgba($primary-color, 0.15);
+    border: 2px dashed $primary-light;
+}
+
+.card-ghost-drop {
+    opacity: 1;
+    background: $card-bg-color;
+    border: 1px solid $border-color;
+    box-shadow: $shadow-md;
+}
+
+.card-modal {
+    .modal-content {
+        background-color: $column-bg-color;
+        border: 1px solid $border-color;
+        border-radius: $border-radius-md;
+        box-shadow: $shadow-lg;
+
+        .modal-header {
+            border-bottom: 1px solid $border-color;
+            padding: $spacing-md;
+            background-color: rgba($primary-color, 0.1);
+            border-radius: $border-radius-md $border-radius-md 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            .modal-title {
+                color: $text-primary;
+                font-size: 18px;
+                font-weight: 600;
+            }
+
+            .close-button {
+                background: none;
+                border: none;
+                color: $text-muted;
+                cursor: pointer;
+                transition: all $transition-speed;
+                padding: 6px;
+                border-radius: $border-radius-sm;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                svg {
+                    font-size: 20px;
+                }
+
+                &:hover {
+                    color: $primary-light;
+                    background-color: rgba($primary-color, 0.2);
+                    transform: translateY(-1px);
+                }
+
+                &:active {
+                    transform: translateY(0);
+                }
+            }
+        }
+
+        .modal-body {
+            padding: $spacing-md;
+
+            .form-group {
+                margin-bottom: $spacing-md;
+
+                label {
+                    display: block;
+                    margin-bottom: $spacing-xs;
+                    color: $text-primary;
+                    font-weight: 500;
+                    font-size: 14px;
+                }
+
+                input, textarea {
+                    width: 100%;
+                    padding: $spacing-sm;
+                    border: 2px solid $border-color;
+                    border-radius: $border-radius-sm;
+                    background-color: $card-bg-color;
+                    color: $text-primary;
+                    transition: all $transition-speed;
+                    font-size: 14px;
+
+                    &:focus {
+                        outline: none;
+                        border-color: $primary-color;
+                        box-shadow: 0 0 0 2px rgba($primary-color, 0.3);
+                    }
+
+                    &::placeholder {
+                        color: $text-muted;
+                    }
+                }
+
+                textarea {
+                    min-height: 100px;
+                    resize: vertical;
+                    line-height: 1.5;
+                }
+            }
+        }
+
+        .modal-footer {
+            border-top: 1px solid $border-color;
+            padding: $spacing-md;
+            display: flex;
+            justify-content: flex-end;
+            gap: $spacing-sm;
+
+            button {
+                padding: $spacing-sm $spacing-md;
+                border-radius: $border-radius-sm;
+                border: none;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+                transition: all $transition-speed;
+
+                &.btn-primary {
+                    background-color: $primary-color;
+                    color: white;
+
+                    &:hover {
+                        background-color: $primary-hover;
+                        transform: translateY(-1px);
+                    }
+
+                    &:active {
+                        transform: translateY(0);
+                    }
+                }
+
+                &.btn-secondary {
+                    background-color: transparent;
+                    color: $text-primary;
+                    border: 1px solid $border-color;
+
+                    &:hover {
+                        background-color: rgba($primary-color, 0.1);
+                        border-color: $primary-color;
+                        transform: translateY(-1px);
+                    }
+
+                    &:active {
+                        transform: translateY(0);
+                    }
+                }
+            }
+        }
     }
 }

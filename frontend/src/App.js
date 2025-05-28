@@ -1,18 +1,18 @@
-// import React, { useState, useEffect, useCallback } from 'react';
-// import axios from 'axios';
-// import imgDesign from './assets/img-design.png';
-import AppBar from './components/AppBar/AppBar';
-import BoardBar from './components/BoardBar/BoardBar';
+import React from 'react';
 import BoardContent from './components/BoardContent/BoardContent';
+import './App.scss';
 
-function App() {
-  return (
-    <div className="trello-master">
-      <AppBar />
-      <BoardBar />
-      <BoardContent />
-    </div>
-  );
-}
+const App = () => {
+    return (
+        <div className="app">
+            <header className="app-header">
+                <h1>BOARD CONTENT</h1>
+            </header>
+            <main className="app-main">
+                <BoardContent />
+            </main>
+        </div>
+    );
+};
 
 export default App;

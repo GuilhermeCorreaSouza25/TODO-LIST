@@ -6,6 +6,7 @@
     margin: 0 $gap $gap 0;
     gap: $gap;
     overflow-x: auto;
+    padding: $spacing-sm;
 
     &::-webkit-scrollbar {
       -webkit-appearance: none;
@@ -16,24 +17,31 @@
     }
 
     &::-webkit-scrollbar-thumb {
-      background-color: rgba(255, 255, 255, .24);
-      border-radius: 5px solid $list-bg-color;
+      background-color: rgba($primary-color, 0.3);
+      border-radius: 5px;
+      border: 2px solid $column-bg-color;
+
+      &:hover {
+        background-color: rgba($primary-color, 0.4);
+      }
     }
 
     .column-drop-preview {
-      background-color: rgba(150, 150, 200, 0.1);
-      border: 1px dashed #abc;
+      background-color: rgba($primary-color, 0.15);
+      border: 2px dashed $primary-light;
       margin: 5px 45px 5px 5px;
+      border-radius: $border-radius-md;
     }
 
     .card-ghost {
         transition: transform 0.18s ease;
-        transform: rotateZ(5deg)
+        transform: rotateZ(5deg);
+        box-shadow: $shadow-lg;
     }
 
     .card-ghost-drop{
         transition: transform 0.18s ease-in-out;
-        transform: rotateZ(0deg)
+        transform: rotateZ(0deg);
     }
 
     .add-new-column{
@@ -42,86 +50,223 @@
         line-height: 32px;
         padding: 4px 0 4px 15px;
         cursor: pointer;
-        color: white;
+        color: $text-primary;
         margin-left: $gap;
         font-size: 15px;
-        background-color: hsla(0, 0, 100, .24);
+        background-color: rgba($primary-color, 0.2);
         border-radius: $column-border-radius;
         display: flex;
         align-items: center;
         gap: 8px;
+        transition: all $transition-speed;
 
         svg {
             font-size: 14px;
-            color: white;
+            color: $primary-light;
         }
 
         &:hover {
-            background-color: hsla(0, 0, 100, .36);
+            background-color: rgba($primary-color, 0.3);
+            color: $primary-light;
         }
     }
 
     .content-add-column{
         width: 250px;
-        padding: 8px;
+        padding: $spacing-sm;
         margin-left: $gap;
-        background-color: hsla(0, 0, 100, .36);
+        background-color: rgba($primary-color, 0.15);
         border-radius: $column-border-radius;
+        border: 1px solid rgba($primary-color, 0.2);
 
         input.form-control {
             width: 100%;
-            padding: 8px;
-            border: 2px solid #dfe1e6;
-            border-radius: 3px;
+            padding: $spacing-sm;
+            border: 2px solid $border-color;
+            border-radius: $border-radius-sm;
             font-size: 14px;
-            background-color: white;
-            color: #172b4d;
-            transition: border-color 0.2s ease;
+            background-color: $card-bg-color;
+            color: $text-primary;
+            transition: all $transition-speed;
 
             &:focus {
                 outline: none;
-                border-color: #4c9aff;
+                border-color: $primary-color;
+                box-shadow: 0 0 0 2px rgba($primary-color, 0.3);
             }
 
             &::placeholder {
-                color: #6b778c;
+                color: $text-muted;
             }
         }
 
         .group-btn{
-            padding-top: 10px;
+            padding-top: $spacing-sm;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: $spacing-sm;
 
             button {
-                padding: 6px 12px;
-                border-radius: 3px;
+                padding: $spacing-sm $spacing-md;
+                border-radius: $border-radius-sm;
                 border: none;
                 cursor: pointer;
                 font-size: 14px;
                 font-weight: 500;
-                background-color: #5aac44;
+                background-color: $primary-color;
                 color: white;
-                transition: background-color 0.2s ease;
+                transition: all $transition-speed;
 
                 &:hover {
-                    background-color: #61bd4f;
+                    background-color: $primary-hover;
+                    transform: translateY(-1px);
+                }
+
+                &:active {
+                    transform: translateY(0);
                 }
             }
 
             svg {
                 font-size: 24px;
-                color: #888;
+                color: $text-muted;
                 cursor: pointer;
-                transition: color 0.2s ease;
+                transition: all $transition-speed;
 
                 &:hover {
-                    color: #333;
+                    color: $primary-light;
+                    transform: scale(1.1);
                 }
             }
         }
     }
+}
 
+.board-content {
+    height: calc(100vh - #{$header-height} - #{$spacing-md});
+    padding: $spacing-md;
+    overflow-x: auto;
+    overflow-y: hidden;
+    background: linear-gradient(to bottom right, $board-bg-color, darken($board-bg-color, 5%));
 
+    .board-columns {
+        display: flex;
+        align-items: flex-start;
+        gap: $spacing-md;
+        min-height: 100%;
+        padding-bottom: $spacing-md;
+
+        &::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: rgba($primary-color, 0.3);
+            border-radius: $border-radius-sm;
+            border: 2px solid $board-bg-color;
+
+            &:hover {
+                background: rgba($primary-color, 0.4);
+            }
+        }
+    }
+
+    .column-drop-preview {
+        background-color: rgba($primary-color, 0.15);
+        border: 2px dashed $primary-light;
+        border-radius: $border-radius-md;
+        margin: 5px;
+        min-width: 300px;
+    }
+
+    .add-column {
+        min-width: 300px;
+        background-color: rgba($primary-color, 0.1);
+        border: 2px dashed $primary-light;
+        border-radius: $border-radius-md;
+        padding: $spacing-md;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all $transition-speed;
+
+        &:hover {
+            background-color: rgba($primary-color, 0.15);
+            transform: translateY(-2px);
+        }
+
+        button {
+            background: none;
+            border: none;
+            color: $primary-light;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: $spacing-xs;
+            cursor: pointer;
+            padding: $spacing-sm;
+            border-radius: $border-radius-sm;
+            transition: all $transition-speed;
+
+            &:hover {
+                background-color: rgba($primary-color, 0.2);
+                color: $primary-color;
+            }
+
+            svg {
+                font-size: 18px;
+            }
+        }
+    }
+
+    .loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: $text-muted;
+        font-size: 16px;
+        gap: $spacing-sm;
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba($primary-color, 0.3);
+            border-top-color: $primary-color;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// Estilização da scrollbar
+.board-content::-webkit-scrollbar {
+    height: 12px;
+}
+
+.board-content::-webkit-scrollbar-track {
+    background: $column-bg-color;
+    border-radius: $border-radius-sm;
+}
+
+.board-content::-webkit-scrollbar-thumb {
+    background: $text-muted;
+    border-radius: $border-radius-sm;
+    border: 3px solid $column-bg-color;
+
+    &:hover {
+        background: darken($text-muted, 10%);
+    }
 }

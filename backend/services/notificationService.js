@@ -1,44 +1,45 @@
-const cron = require('node-cron');
+const pool = require('../config/database');
 const { sendEmail } = require('./emailService');
-const pool = require('./db');
 require('dotenv').config();
 
 const USER_EMAIL = process.env.USER_EMAIL;
 
-// Verifica tarefas próximas a cada minuto
-const scheduleUpcomingTaskReminders = () => {
-  cron.schedule('* * * * *', async () => { // Executa a cada minuto
-    console.log('Verificando tarefas próximas...');
+const checkUpcomingCards = async () => {
     try {
-      const [tasks] = await pool.query('SELECT * FROM tasks');
-      const now = new Date();
-      for (const card of tasks) {
-        if (!card.completed && card.dueDate) {
-          const dueDate = new Date(card.dueDate);
-          const timeDifference = dueDate.getTime() - now.getTime();
-          const oneHour = 60 * 60 * 1000;
+        const [cards] = await pool.query(`
+            SELECT c.*, col.name as columnName 
+            FROM cards c
+            JOIN columns col ON c.columnId = col.id
+            WHERE c.dueDate IS NOT NULL 
+            AND c.completed = FALSE 
+            AND c.notified = FALSE
+            AND c.dueDate BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 1 HOUR)
+        `);
 
-          // Se a tarefa vence em 1 hora ou menos e ainda não passou
-          if (timeDifference > 0 && timeDifference <= oneHour) {
-            // Aqui, idealmente, você deveria ter uma flag no banco para evitar múltiplas notificações
-            // Exemplo: UPDATE tasks SET notifiedUpcoming = 1 WHERE id = ?
+        for (const card of cards) {
             if (USER_EMAIL) {
-              await sendEmail(
-                USER_EMAIL,
-                `Lembrete: Tarefa Próxima - "${card.text}"`,
-                `A tarefa "${card.text}" está programada para ${new Date(card.dueDate).toLocaleString()}. Menos de uma hora restante!`,
-                `<p>Lembrete!</p><p>A tarefa "<strong>${card.text}</strong>" está programada para <strong>${new Date(card.dueDate).toLocaleString()}</strong>.</p><p>Menos de uma hora restante!</p>`
-              );
+                await sendEmail(
+                    USER_EMAIL,
+                    'Card com Prazo Próximo!',
+                    `O card "${card.title}" na coluna "${card.columnName}" está próximo do prazo.`,
+                    `<p>O card "<strong>${card.title}</strong>" na coluna "<strong>${card.columnName}</strong>" está próximo do prazo.</p>`
+                );
+
+                // Marcar como notificado
+                await pool.query('UPDATE cards SET notified = TRUE WHERE id = ?', [card.id]);
             }
-          }
         }
-      }
     } catch (error) {
-      console.error('Erro ao buscar tarefas para notificação:', error);
+        console.error('Erro ao verificar cards com prazo próximo:', error);
     }
-  });
-  console.log('Agendador de lembretes de tarefas próximas iniciado.');
 };
 
-module.exports = { scheduleUpcomingTaskReminders };
-// module.exports = { scheduleUpcomingTaskReminders };
+// Verificar a cada hora
+setInterval(checkUpcomingCards, 60 * 60 * 1000);
+
+// Verificar imediatamente ao iniciar
+checkUpcomingCards();
+
+module.exports = {
+    checkUpcomingCards
+};

@@ -5,7 +5,7 @@ import axios from 'axios';
 import Card from '../Card/Card';
 import { mapOrder } from '../../utilities/sort';
 import { Container, Draggable } from "react-smooth-dnd";
-import { faPlus, faEllipsisH, faClose } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faEllipsisH, faClose, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Dropdown from 'react-bootstrap/Dropdown';
 import ConfirmModal from '../Common/ConfirmModal';
@@ -19,46 +19,20 @@ const Column = (props) => {
     const cards = mapOrder(column.cards, column.cardOrder, 'id');
 
     const [isShowModalDelete, setShowModalDelete] = useState(false);
+    const [isShowModalClear, setShowModalClear] = useState(false);
     const [nomeColumn, setNameColumn] = useState(column.name);
-    const [isFirstClick, setIsFirstClick] = useState(true);
+    const [isEditing, setIsEditing] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isAddingCard, setIsAddingCard] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isClearing, setIsClearing] = useState(false);
     const inputRef = useRef(null);
     const [isShowAddNewCard, setIsShowAddNewCard] = useState(false);
     const [valueTextArea, setValueTextArea] = useState('');
     const textAreaRef = useRef(null);
     
 
-    // State to manage tasks
-    const [tasks, setTasks] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const apiUrl = process.env.REACT_APP_API_URL;
-
-    // Fetch tasks from the backend
-    // using useCallback to memoize the function
-    const fetchTasks = useCallback(async () => {
-        try {
-            setLoading(true);
-            const response = await axios.get(`${apiUrl}/tasks`);
-            const sortedTasks = response.data.sort((a, b) => {
-                if (a.completed !== b.completed) {
-                    return a.completed ? 1 : -1;
-                }
-                return new Date(b.createdAt) - new Date(a.createdAt);
-            });
-            setTasks(sortedTasks);
-            setError(null);
-        } catch (err) {
-            console.error("Erro ao buscar tarefas:", err);
-            setError("Falha ao carregar tarefas. Verifique a conexão com o backend.");
-            setTasks([]);
-        } finally {
-            setLoading(false);
-        }
-    }, [apiUrl]);
-
-    useEffect(() => {
-        fetchTasks();
-    }, [fetchTasks]);
 
     useEffect(() => {
         if(isShowAddNewCard && textAreaRef && textAreaRef.current) {
@@ -72,184 +46,270 @@ const Column = (props) => {
         }
     },[column])
 
+    useEffect(() => {
+        if(isEditing && inputRef && inputRef.current) {
+            inputRef.current.focus();
+            inputRef.current.select();
+        }
+    }, [isEditing]);
+
     const toggleModal = () => {
         setShowModalDelete(!isShowModalDelete);
     }
 
-    const onModalAction = (type) => {
-        if(type === MODAL_ACTION_CLOSE) {
+    const toggleClearModal = () => {
+        setShowModalClear(!isShowModalClear);
+    }
 
+    const onModalAction = async (type) => {
+        if(type === MODAL_ACTION_CLOSE) {
+            toggleModal();
         }
         if (type === MODAL_ACTION_CONFIRM) {
+            setIsDeleting(true);
+            try {
+                await axios.delete(`${apiUrl}/columns/${column.id}`);
+                const newColumn = {
+                    ...column,
+                    _destroy: true
+                };
+                onUpdateColumn(newColumn);
+            } catch (error) {
+                console.error('Erro ao deletar coluna:', error);
+                alert('Erro ao deletar coluna');
+            } finally {
+                setIsDeleting(false);
+                toggleModal();
+            }
+        }
+    }
+
+    const onClearModalAction = async (type) => {
+        if(type === MODAL_ACTION_CLOSE) {
+            toggleClearModal();
+        }
+        if (type === MODAL_ACTION_CONFIRM) {
+            setIsClearing(true);
+            try {
+                await axios.delete(`${apiUrl}/columns/${column.id}/clear`);
+                const newColumn = {
+                    ...column,
+                    cards: [],
+                    cardOrder: []
+                };
+                onUpdateColumn(newColumn);
+            } catch (error) {
+                console.error('Erro ao limpar coluna:', error);
+                alert('Erro ao limpar coluna');
+            } finally {
+                setIsClearing(false);
+                toggleClearModal();
+            }
+        }
+    }
+
+    const handleEditColumn = () => {
+        setIsEditing(true);
+    }
+
+    const handleClickOutside = async () => {
+        if (!isEditing) return;
+        
+        setIsEditing(false);
+        try {
+            await axios.put(`${apiUrl}/columns/${column.id}`, {
+                name: nomeColumn
+            });
             const newColumn = {
                 ...column,
-                _destroy: true
+                name: nomeColumn,
+                _destroy: false
             };
             onUpdateColumn(newColumn);
+        } catch (error) {
+            console.error('Erro ao atualizar nome da coluna:', error);
+            alert('Erro ao atualizar nome da coluna');
         }
-        toggleModal();
     }
 
-    const selectAllText = (event) => {
-        setIsFirstClick(false);
-        if (isFirstClick) {
-            event.target.select();
-        }else{
-            inputRef.current.setSelectionRange(nomeColumn.length, nomeColumn.length);
-        }
-       
-        
-    }
-
-    const handleClickOutside = () =>{
-        setIsFirstClick(false);
-        const newColumn = {
-            ...column,
-            name: nomeColumn,
-            _destroy: false
-        };
-        onUpdateColumn(newColumn);
-    }
-
-    const handleAddNewCard = () => {
+    const handleAddNewCard = async () => {
         if(!valueTextArea) {
-            alert('Please enter a card name');
+            alert('Por favor, digite um nome para o card');
             return;
         }
 
-        const newCard = {
-            id: uuidv4(),
-            boardId: column.boardId,
-            columnId: column.id,
-            title: valueTextArea,
-            image: null
-        };
+        setIsAddingCard(true);
+        try {
+            const response = await axios.post(`${apiUrl}/cards`, {
+                boardId: column.boardId,
+                columnId: column.id,
+                title: valueTextArea
+            });
 
-        let newColumn = {...column};
-        newColumn.cards = [...newColumn.cards, newCard];
-        newColumn.cardOrder = newColumn.cards.map((card) => card.id);
-        onUpdateColumn(newColumn);
-        setValueTextArea('');
-        setIsShowAddNewCard(false);
+            const newCard = response.data;
+            let newColumn = {...column};
+            newColumn.cards = [...newColumn.cards, newCard];
+            newColumn.cardOrder = newColumn.cards.map((card) => card.id);
+            onUpdateColumn(newColumn);
+            setValueTextArea('');
+            setIsShowAddNewCard(false);
+        } catch (error) {
+            console.error('Erro ao adicionar card:', error);
+            alert('Erro ao adicionar card');
+        } finally {
+            setIsAddingCard(false);
+        }
     }
+
     return (
         <>
             <div className="column">
                 <header className="column-drag-handle">
                     <div className="column-name">
-                        <Form.Control
-                            size="sm"
-                            type="text"
-                            value= {nomeColumn}
-                            className='customize-input-column'
-                            onClick={selectAllText}
-                            onChange={(event)=> setNameColumn(event.target.value)}
-                            spellCheck="false"
-                            onBlur={handleClickOutside}
-                            onMouseDown={(event) => event.preventDefault()}
-                            ref={inputRef}
-                            
-                        />
-                        </div>
-                    <div className="column-dropdown">
-                        <Dropdown>
-                            <Dropdown.Toggle 
-                                variant="" 
-                                id="dropdown-basic"
-                                size='sm'
+                        {isEditing ? (
+                            <Form.Control
+                                size="sm"
+                                type="text"
+                                value={nomeColumn}
+                                className='customize-input-column'
+                                onChange={(event)=> setNameColumn(event.target.value)}
+                                spellCheck="false"
+                                onBlur={handleClickOutside}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        handleClickOutside();
+                                    }
+                                }}
+                                ref={inputRef}
+                            />
+                        ) : (
+                            <div 
+                                className="column-title" 
+                                onClick={handleEditColumn}
                             >
-                                <FontAwesomeIcon icon={faEllipsisH} />
-                            </Dropdown.Toggle>
-
-                            <Dropdown.Menu>
-                                <Dropdown.Item onClick={() => console.log('Editar coluna:', column.id)}>
-                                    Editar coluna
-                                </Dropdown.Item>
-                                <Dropdown.Item onClick={toggleModal}>
-                                    Excluir coluna
-                                </Dropdown.Item>
-                                <Dropdown.Item onClick={() => console.log('Limpar coluna:', column.id)}>
-                                    Limpar coluna
-                                </Dropdown.Item>
-                            </Dropdown.Menu>
-                        </Dropdown>
+                                {nomeColumn}
+                            </div>
+                        )}
                     </div>
+                    
+                    <Dropdown>
+                        <Dropdown.Toggle 
+                            variant="" 
+                            id="dropdown-basic"
+                            size='sm'
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <FontAwesomeIcon icon={faSpinner} spin />
+                            ) : (
+                                <FontAwesomeIcon icon={faEllipsisH} />
+                            )}
+                        </Dropdown.Toggle>
+
+                        <Dropdown.Menu>
+                            <Dropdown.Item onClick={handleEditColumn}>
+                                Editar coluna
+                            </Dropdown.Item>
+                            <Dropdown.Item onClick={toggleModal}>
+                                Excluir coluna
+                            </Dropdown.Item>
+                            <Dropdown.Item onClick={toggleClearModal}>
+                                Limpar coluna
+                            </Dropdown.Item>
+                        </Dropdown.Menu>
+                    </Dropdown>
                 </header>
-                <div className="card-list">
-                    <Container
-                        groupName="col"
-                        onDrop={(dropResult) => onCardDrop(dropResult, column.id)}
-                        getChildPayload={index => cards[index]}
-                        dragClass="card-ghost"
-                        dropClass="card-ghost-drop"
-                        dropPlaceholder={{                      
+                
+                <Container
+                    groupName="col"
+                    onDrop={(dropResult) => onCardDrop(dropResult, column.id)}
+                    getChildPayload={index => cards[index]}
+                    dragClass="card-ghost"
+                    dropClass="card-ghost-drop"
+                    dropPlaceholder={{                      
                         animationDuration: 150,
                         showOnTop: true,
-                        className: 'card-drop-preview ' 
-                        }}
-                        dropPlaceholderAnimationDuration={200}
-                        >
-                            {cards && cards.length > 0 && cards.map((card, index) => {
-                                return (
-                                    <Draggable key={card.id}>
-                                        <Card card={card} isFirstCard={index === 0} />
-                                    </Draggable>
-                                )
-                            })}
-                            {tasks.map(task => (
-                                <Draggable key={task.id}>
-                                    <div key={task.id} className="card-item">
-                                        {task.task}
-                                    </div>
-                                </Draggable>
-                            ))}
-                    </Container>
-                    {isShowAddNewCard === true &&
-                        <div className="add-new-card">
-                            <textarea
-                                rows={2}
-                                className='form-control'
-                                placeholder="Enter a name for this card..."
-                                ref={textAreaRef}
-                                value={valueTextArea}
-                                onChange={(event) => setValueTextArea(event.target.value)}
-                            ></textarea>
-                            <div className="group-btn">
-                                <button 
-                                    className='btn btn-primary btn-sm'
-                                    onClick={() => handleAddNewCard()}
-                                >Add card</button>
-                                <FontAwesomeIcon 
-                                    icon={faClose}
-                                    className='add-icon'
-                                    onClick={() => setIsShowAddNewCard(false)}
-                                />
-                            </div>
+                        className: 'card-drop-preview' 
+                    }}
+                    dropPlaceholderAnimationDuration={200}
+                >
+                    {cards && cards.length > 0 && cards.map((card, index) => {
+                        return (
+                            <Draggable key={card.id}>
+                                <Card card={card} isFirstCard={index === 0} />
+                            </Draggable>
+                        )
+                    })}
+                </Container>
+                
+                {isShowAddNewCard && (
+                    <div className="add-new-card">
+                        <textarea
+                            rows={2}
+                            className='form-control'
+                            placeholder="Digite um nome para este card..."
+                            ref={textAreaRef}
+                            value={valueTextArea}
+                            onChange={(event) => setValueTextArea(event.target.value)}
+                            disabled={isAddingCard}
+                        ></textarea>
+                        <div className="group-btn">
+                            <button 
+                                className='btn btn-primary btn-sm'
+                                onClick={() => handleAddNewCard()}
+                                disabled={isAddingCard}
+                            >
+                                {isAddingCard ? (
+                                    <>
+                                        <FontAwesomeIcon icon={faSpinner} spin /> Adicionando...
+                                    </>
+                                ) : (
+                                    'Adicionar card'
+                                )}
+                            </button>
+                            <FontAwesomeIcon 
+                                icon={faClose}
+                                className='add-icon'
+                                onClick={() => setIsShowAddNewCard(false)}
+                                style={{ cursor: isAddingCard ? 'not-allowed' : 'pointer' }}
+                            />
                         </div>
-                    }
-                </div>
-                {isShowAddNewCard === false &&
+                    </div>
+                )}
+                
+                {!isShowAddNewCard && (
                     <footer>
                         <div 
                             className='footer-action' 
-                            onClick={() => setIsShowAddNewCard(true)}
+                            onClick={() => !isLoading && setIsShowAddNewCard(true)}
+                            style={{ cursor: isLoading ? 'not-allowed' : 'pointer' }}
                         >
                             <FontAwesomeIcon 
                                 icon={faPlus} 
                             /> 
-                            Add another card
+                            Adicionar outro card
                         </div>
                     </footer>
-                }
+                )}
             </div>
-            <ConfirmModal 
+            
+            <ConfirmModal
                 show={isShowModalDelete}
-                title={"Remove a column"}
-                content={`Are you sure you want to remove the column: <b>${column.name}</b>?`}
+                title={"Remover coluna"}
+                content={`Tem certeza que deseja remover a coluna: <b>${column.name}</b>?`}
                 onAction={onModalAction}
+                isLoading={isDeleting}
+                loadingText="Removendo coluna..."
             />
-            {loading && <p className="text-center text-gray-600">Carregando tarefas...</p>}
-            {error && <p className="text-center text-red-500 bg-red-100 p-3 rounded-md">{error}</p>}
+
+            <ConfirmModal
+                show={isShowModalClear}
+                title={"Limpar coluna"}
+                content={`Tem certeza que deseja remover todos os cards da coluna: <b>${column.name}</b>?`}
+                onAction={onClearModalAction}
+                isLoading={isClearing}
+                loadingText="Limpando coluna..."
+            />
         </>
     )
 }
