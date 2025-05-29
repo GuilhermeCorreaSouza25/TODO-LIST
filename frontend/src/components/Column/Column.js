@@ -24,6 +24,7 @@ const Column = (props) => {
     const [nomeColumn, setNameColumn] = useState(column.name);
     const [isEditing, setIsEditing] = useState(false);
     const [isFirstClick, setIsFirstClick] = useState(true); // Lógica de clique para seleção de texto no nome da coluna
+    const [showDropdown, setShowDropdown] = useState(false);
     const inputRef = useRef(null);
     const [isShowAddNewCard, setIsShowAddNewCard] = useState(false);
     const [valueTextArea, setValueTextArea] = useState('');
@@ -146,24 +147,30 @@ const Column = (props) => {
 
     const handleClickOutside = () => { // Lógica para nome da coluna (quando não está editando via Enter/Blur direto no input)
         setIsFirstClick(false); // reset
-        // A edição do nome da coluna agora é principalmente tratada por handleEditColumn (onBlur, onKeyPress)
-        // Esta função handleClickOutside como estava antes poderia causar updates duplicados ou indesejados.
-        // Se a intenção era salvar ao clicar fora sem apertar Enter, o onBlur do Form.Control já faz isso.
-        // A lógica original de onUpdateColumn aqui foi removida para evitar conflito com handleEditColumn.
-        // Se precisar de um "save on click outside" mais explícito, revise esta parte.
-        if (isEditing && nomeColumn.trim() !== column.name) {
-             // Se ainda estiver editando e o nome mudou, poderia chamar handleEditColumn
-             // Mas o onBlur do input já faz isso.
-        }
+
         setIsEditing(false); // Garante que saia do modo de edição
     };
 
+    const handleEditClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsEditing(true);
+        setShowDropdown(false);
+        // Garantir que o input receba foco após o dropdown fechar
+        setTimeout(() => {
+            if (inputRef.current) {
+                inputRef.current.focus();
+                inputRef.current.select();
+            }
+        }, 100);
+    };
+
     const handleEditColumn = async () => {
-        if (!isEditing) return; // Previne chamadas se não estiver em modo de edição
+        if (!isEditing) return;
 
         const trimmedName = nomeColumn.trim();
-        if (trimmedName === '' || trimmedName === column.name) {
-            setNameColumn(column.name); // Restaura se vazio ou não mudou
+        if (trimmedName === '') {
+            setNameColumn(column.name);
             setIsEditing(false);
             return;
         }
@@ -175,10 +182,10 @@ const Column = (props) => {
                 ...column,
                 name: trimmedName
             };
-            onUpdateColumn(newColumn); // Notifica o componente pai sobre a mudança
+            onUpdateColumn(newColumn);
         } catch (err) {
             console.error("Erro ao editar coluna:", err);
-            setNameColumn(column.name); // Restaura em caso de erro
+            setNameColumn(column.name);
         } finally {
             setIsLoadingEdit(false);
             setIsEditing(false);
@@ -197,17 +204,6 @@ const Column = (props) => {
         } finally {
             setIsLoadingClear(false);
         }
-    };
-
-    const handleEditClick = () => {
-        setIsEditing(true);
-        setIsFirstClick(true); // Para lógica de selectAllText
-        setTimeout(() => {
-            if (inputRef.current) {
-                inputRef.current.focus();
-                // inputRef.current.select(); // Descomente se quiser selecionar todo o texto ao clicar
-            }
-        }, 0);
     };
 
     const handleDeleteColumn = async () => {
@@ -421,23 +417,23 @@ const Column = (props) => {
                                 value={nomeColumn}
                                 className='customize-input-column'
                                 onChange={(event) => setNameColumn(event.target.value)}
-                                onBlur={handleEditColumn} // Salva ao perder o foco
+                                onBlur={handleEditColumn}
                                 onKeyPress={(e) => e.key === 'Enter' && handleEditColumn()}
                                 spellCheck="false"
                                 ref={inputRef}
-                                onClick={(e) => e.stopPropagation()} // Impede que o clique no input feche a edição
-                                onFocus={selectAllText} // Para lógica de selecionar texto
-                                disabled={isLoadingEdit}
+                                onClick={(e) => e.stopPropagation()}
                             />
                         ) : (
-                            <div className="column-title" onClick={(e) => {e.stopPropagation(); handleEditClick();}}> {/* Parar propagação para não disparar handleClickOutside */}
+                            <div className="column-title" onClick={(e) => {e.stopPropagation(); handleEditClick(e);}}>
                                 {nomeColumn}
                                 {isLoadingEdit && <LoadingSpinner size="sm" />}
                             </div>
                         )}
                     </div>
                     <div className="column-dropdown">
-                        <Dropdown>
+                        <Dropdown show={showDropdown} onToggle={(isOpen) => {
+                            setShowDropdown(isOpen);
+                        }}>
                             <Dropdown.Toggle
                                 variant=""
                                 id="dropdown-basic"
@@ -448,7 +444,7 @@ const Column = (props) => {
                             </Dropdown.Toggle>
 
                             <Dropdown.Menu>
-                                <Dropdown.Item onClick={handleEditClick} disabled={isLoadingEdit}>
+                                <Dropdown.Item onClick={(e) => handleEditClick(e)} disabled={isLoadingEdit}>
                                     {isLoadingEdit ? <LoadingSpinner size="sm" /> : 'Editar coluna'}
                                 </Dropdown.Item>
                                 <Dropdown.Item onClick={() => setShowModalDelete(true)} disabled={isLoadingDelete}>
