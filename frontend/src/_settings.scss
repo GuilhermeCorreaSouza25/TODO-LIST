@@ -1,70 +1,19 @@
-// Colors
-$primary-color: #026aa7;
-$primary-light: #4c9aff;
-$primary-dark: #005a8c;
-$primary-hover: #0079bf;
-$primary-transparent: rgba(2, 106, 167, 0.1);
+$board-bg-color: #0079bf;
+$navbar-app-bg-color: #0067a3;
+$navbar-board-bg-color: #0079bf;
+$list-bg-color: #ebecf0;
+$app-main-color:#333;
+$gap: 10px;
+$column-header-height: 45px;
+$column-footer-height: 36px;
+$column-border-radius: 5px;
+$card-border-radius: 3px;
 
-// Dark theme colors
-$board-bg-color: #1e1e1e;
-$column-bg-color: #2d2d2d;
-$card-bg-color: #2a2a2a;
-$list-bg-color: #2d2d2d;
 
-$text-primary: #ffffff;
-$text-muted: #b3b3b3;
-$text-secondary: #cccccc;
-$border-color: #404040;
-
-$error-color: #ff6b6b;
-$warning-color: #ffd93d;
-$success-color: #6bff6b;
-
-// Header colors
-$header-bg-color: #005a8c;
-$header-text-color: #ffffff;
-$header-border-color: #004d7a;
-
-// Spacing
-$spacing-xs: 4px;
-$spacing-sm: 8px;
-$spacing-md: 16px;
-$spacing-lg: 24px;
-$spacing-xl: 32px;
-$gap: 8px;
-
-// Heights
-$header-height: 50px;
-$column-header-height: 40px;
-$column-footer-height: 40px;
-
-// Border Radius
-$border-radius-sm: 4px;
-$border-radius-md: 8px;
-$border-radius-lg: 12px;
-$card-border-radius: 4px;
-$column-border-radius: 4px;
-
-// Shadows
-$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-$shadow-md: 0 2px 4px rgba(0, 0, 0, 0.3);
-$shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.3);
-
-// Transitions
-$transition-speed: 0.2s;
-$transition-speed-fast: 0.1s;
-$transition-speed-slow: 0.3s;
-$transition-timing: ease;
-
-// Breakpoints
-$mobile: 768px;
-$tablet: 1024px;
-$desktop: 1280px;
-
-// Screen
-$screen-lg: 1201px;
-$screen-md: 992px;
-$screen-sm: 768px;
-$screen-phone: 480px;
-$screen-ip6-down: '(max-width: 375px)';
+// screen
+$screen-lg:1201px;
+$screen-md:992px;
+$screen-sm:768px;
+$screen-phone:480px;
+$screen-ip6-down:'(max-width: 375px)';
 

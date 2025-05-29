@@ -1,109 +1,155 @@
 import './BoardContent.scss'
 import Column from '../Column/Column';
+import { initData } from '../../actions/initData';
 import { useState, useEffect, useRef } from 'react';
 import _ from 'lodash';
 import { mapOrder } from '../../utilities/sort';
 import { Container, Draggable } from "react-smooth-dnd";
 import { applyDrag } from '../../utilities/dragDrop';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClose, faPlus, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faClose, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
-import { DragDropContext, Droppable } from '@hello-pangea/dnd';
+
+const apiUrl = process.env.REACT_APP_API_URL;
 
 const BoardContent = () => {
+
     const [board, setBoard] = useState({});
     const [columns, setColumns] = useState([]);
+
     const [isShowAddList, setIsShowAddList] = useState(false);
-    const [isAddingColumn, setIsAddingColumn] = useState(false);
     const inputRef = useRef(null);
     const [valueInput, setValueInput] = useState('');
-    const apiUrl = process.env.REACT_APP_API_URL;
-    const BOARD_ID = 'board-1';
-    const [isLoading, setIsLoading] = useState(true);
+    const [message, setMessage] = useState({ text: '', type: '' });
 
     useEffect(() => {
         if(isShowAddList === true && inputRef && inputRef.current){
             inputRef.current.focus();
         }
-    },[isShowAddList]);
+    },[isShowAddList])
 
     useEffect(() => {
-        const fetchBoard = async () => {
+        const fetchData = async () => {
             try {
-                // Primeiro, tenta buscar o board
-                let boardResponse;
-                try {
-                    boardResponse = await axios.get(`${apiUrl}/boards/${BOARD_ID}`);
-                } catch (error) {
-                    // Se o board não existir, cria um novo
-                    if (error.response && error.response.status === 404) {
-                        boardResponse = await axios.post(`${apiUrl}/boards`, {
-                            id: BOARD_ID,
-                            columnOrder: []
-                        });
-                    } else {
-                        throw error;
-                    }
+                const response = await axios.get(`${apiUrl}/boards`);
+                const boards = response.data;
+                console.log('Boards:', boards);
+                const boardInitData = boards.find(item => item.id === 'board-1');
+                console.log('Board Init Data:', boardInitData);
+                if(boardInitData) {
+                    setBoard(boardInitData);
+                    const columnsResponse = await axios.get(`${apiUrl}/columns/board/${boardInitData.id}`);
+                    console.log('Columns Response:', columnsResponse.data);
+                    // Garantir que cada coluna tenha um cardOrder inicial
+                    const columnsWithCardOrder = columnsResponse.data.map(column => ({
+                        ...column,
+                        cardOrder: column.cardOrder || []
+                    }));
+                    setColumns(mapOrder(columnsWithCardOrder, boardInitData.columnOrder || [], 'id'));
                 }
-
-                // Busca as colunas
-                const columnsResponse = await axios.get(`${apiUrl}/columns`);
-                const columns = columnsResponse.data;
-                
-                setBoard(boardResponse.data);
-                setColumns(columns);
             } catch (error) {
-                console.error('Erro ao carregar dados do quadro:', error);
-                alert('Erro ao carregar dados do quadro. Verifique se o backend está rodando e se o banco de dados está configurado corretamente.');
-            } finally {
-                setIsLoading(false);
+                console.error("Erro ao buscar dados:", error);
+                setMessage({ text: 'Erro ao buscar dados.', type: 'error' });
             }
         };
+        fetchData();
+    },[]);
 
-        fetchBoard();
-    }, [apiUrl]);
+    useEffect(() => {
+        if (message.text) {
+            const timer = setTimeout(() => {
+                setMessage({ text: '', type: '' });
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [message]);
 
     const onColumnDrop = async (dropResult) => {
+        if (!dropResult || !dropResult.removedIndex && dropResult.addedIndex === null) return;
+
         let newColumns = [...columns];
         newColumns = applyDrag(newColumns, dropResult);
 
-        let newBoard = {...board};
-        newBoard.columnOrder = newColumns.map(c => c.id);
-        newBoard.columns = newColumns;
+        // Filtrar apenas as colunas que ainda existem
+        const validColumnIds = newColumns.map(col => col.id);
+        const filteredColumnOrder = (board.columnOrder || []).filter(id => validColumnIds.includes(id));
+
+        // Adicionar novas colunas que não estavam na ordem anterior
+        const newColumnOrder = [...filteredColumnOrder];
+        newColumns.forEach(col => {
+            if (!newColumnOrder.includes(col.id)) {
+                newColumnOrder.push(col.id);
+            }
+        });
+
+        let newBoard = {
+            ...board,
+            columnOrder: newColumnOrder,
+            columns: newColumns
+        };
 
         setColumns(newColumns);
         setBoard(newBoard);
 
-        // Atualizar ordem no backend
+        // Persistir a ordem das colunas no backend
         try {
-            await axios.put(`${apiUrl}/boards/${board.id}`, {
-                columnOrder: newBoard.columnOrder
-            });
+            await axios.put(`${apiUrl}/boards/${board.id}`, { columnOrder: newColumnOrder });
+            setMessage({ text: 'Ordem das colunas atualizada com sucesso!', type: 'success' });
         } catch (error) {
-            console.error('Erro ao atualizar ordem das colunas:', error);
+            console.error("Erro ao atualizar ordem das colunas:", error);
+            setMessage({ text: 'Erro ao atualizar ordem das colunas.', type: 'error' });
+            // Reverter para o estado anterior em caso de erro
+            setColumns(columns);
+            setBoard(board);
         }
-    }
+    };
 
     const onCardDrop = async (dropResult, columnId) => {
-        if(dropResult.removedIndex === null && dropResult.addedIndex === null) return;
-        
-        let newColumns = [...columns];
-        let currentColumn = newColumns.find(column => column.id === columnId);
-        currentColumn.cards = applyDrag(currentColumn.cards, dropResult);
-        currentColumn.cardOrder = currentColumn.cards.map(card => card.id);
-        
-        setColumns(newColumns);
-
-        // Atualizar ordem no backend
-        try {
-            await axios.put(`${apiUrl}/columns/${columnId}`, {
-                cardOrder: currentColumn.cardOrder
-            });
-        } catch (error) {
-            console.error('Erro ao atualizar ordem dos cards:', error);
+        if (!dropResult || (dropResult.removedIndex === null && dropResult.addedIndex === null)) {
+            return;
         }
-    }
+
+        try {
+            let newColumns = [...columns];
+            let currentColumn = newColumns.find(column => column.id === columnId);
+            
+            // Se o card veio de outra coluna
+            if (dropResult.payload && dropResult.payload.columnId !== columnId) {
+                // Atualizar o columnId do card no backend
+                await axios.put(`${apiUrl}/tasks/${dropResult.payload.id}`, {
+                    columnId: columnId
+                });
+
+                // Atualizar o cardOrder da coluna de origem
+                const sourceColumn = newColumns.find(col => col.id === dropResult.payload.columnId);
+                if (sourceColumn) {
+                    const sourceCardOrder = sourceColumn.cardOrder.filter(id => id !== dropResult.payload.id);
+                    sourceColumn.cardOrder = sourceCardOrder;
+                    await axios.put(`${apiUrl}/columns/${sourceColumn.id}`, { 
+                        cardOrder: JSON.stringify(sourceCardOrder) 
+                    });
+                }
+            }
+
+            // Atualizar os cards da coluna atual usando applyDrag
+            currentColumn.cards = applyDrag(currentColumn.cards || [], dropResult);
+            currentColumn.cardOrder = currentColumn.cards.map(card => card.id);
+            
+            // Atualizar o estado
+            setColumns(newColumns);
+
+            // Persistir a nova ordem no backend
+            await axios.put(`${apiUrl}/columns/${columnId}`, { 
+                cardOrder: JSON.stringify(currentColumn.cardOrder) 
+            });
+
+            setMessage({ text: 'Ordem dos cards atualizada com sucesso!', type: 'success' });
+        } catch (error) {
+            console.error("Erro ao atualizar ordem dos cards:", error);
+            setMessage({ text: 'Erro ao atualizar ordem dos cards.', type: 'error' });
+        }
+    };
 
     const handleAddList = async () => {
         if(!valueInput){
@@ -112,238 +158,141 @@ const BoardContent = () => {
             return;
         }
 
-        setIsAddingColumn(true);
         try {
-            const response = await axios.post(`${apiUrl}/columns`, {
+            // Criar a nova coluna
+            const newColumn = {
+                id: uuidv4(),
                 boardId: board.id,
-                name: valueInput
+                name: valueInput,
+                cardOrder: [],
+                cards: []
+            };
+
+            // Persistir a nova coluna no backend primeiro
+            const response = await axios.post(`${apiUrl}/columns`, newColumn);
+            const createdColumn = response.data;
+
+            // Atualizar o estado local apenas após a criação bem-sucedida
+            const _columns = [...columns];
+            _columns.push(createdColumn);
+
+            // Atualizar o estado do board
+            const newBoard = {
+                ...board,
+                columnOrder: [...board.columnOrder, createdColumn.id]
+            };
+
+            // Atualizar os estados
+            setColumns(_columns);
+            setBoard(newBoard);
+            setValueInput('');
+            setIsShowAddList(false);
+
+            // Atualizar a ordem das colunas no backend
+            await axios.put(`${apiUrl}/boards/${board.id}`, { 
+                columnOrder: newBoard.columnOrder 
             });
 
-            const newColumn = response.data;
-            const _columns = _.cloneDeep(columns);
-            _columns.push(newColumn);
-
-            setColumns(_columns);
-            setValueInput('');
-            inputRef.current.focus();
-            setIsShowAddList(false);
+            setMessage({ text: 'Coluna adicionada com sucesso!', type: 'success' });
         } catch (error) {
-            console.error('Erro ao adicionar coluna:', error);
-            alert('Erro ao adicionar coluna');
-        } finally {
-            setIsAddingColumn(false);
+            console.error("Erro ao adicionar coluna:", error);
+            setMessage({ 
+                text: 'Erro ao adicionar coluna. Por favor, tente novamente.', 
+                type: 'error' 
+            });
         }
     }
 
     if(_.isEmpty(board)) {
         return (
             <>
-                <div className='not-found'>Quadro não encontrado</div>
+                <div className='not-found'> Board not found </div>
             </>
         )
     }
 
-    const onUpdateColumn = (newColumn) => {
+    const onUpdateColumn = async (newColumn) => {
         const columnIdUpdate = newColumn.id;
         const ncols = [...columns];
         const columnIndex = ncols.findIndex(item => item.id === columnIdUpdate);
         if(newColumn._destroy) {
             ncols.splice(columnIndex, 1);
-        } else {
+        }else{
             ncols[columnIndex] = newColumn;
         }
         setColumns(ncols);
-    }
 
-    const handleAddColumn = async () => {
-        setIsAddingColumn(true);
+        // Persistir a atualização da coluna no backend
         try {
-            const response = await axios.post(`${apiUrl}/columns`, {
-                boardId: board.id,
-                name: 'Nova Coluna'
-            });
-            const newColumn = response.data;
-            const _columns = _.cloneDeep(columns);
-            _columns.push(newColumn);
-            setColumns(_columns);
-        } catch (error) {
-            console.error('Erro ao adicionar coluna:', error);
-        } finally {
-            setIsAddingColumn(false);
-        }
-    };
-
-    const handleDeleteColumn = async (columnId) => {
-        try {
-            await axios.delete(`${apiUrl}/columns/${columnId}`);
-            setColumns(columns.filter(column => column.id !== columnId));
-        } catch (error) {
-            console.error('Erro ao deletar coluna:', error);
-        }
-    };
-
-    const handleClearColumn = async (columnId) => {
-        try {
-            await axios.delete(`${apiUrl}/columns/${columnId}/cards`);
-            setColumns(columns.map(column => {
-                if (column.id === columnId) {
-                    return { ...column, cards: [] };
-                }
-                return column;
-            }));
-        } catch (error) {
-            console.error('Erro ao limpar coluna:', error);
-        }
-    };
-
-    const handleUpdateColumnName = async (columnId, newName) => {
-        try {
-            await axios.put(`${apiUrl}/columns/${columnId}`, {
-                title: newName
-            });
-            setColumns(columns.map(column => {
-                if (column.id === columnId) {
-                    return { ...column, title: newName };
-                }
-                return column;
-            }));
-        } catch (error) {
-            console.error('Erro ao atualizar nome da coluna:', error);
-        }
-    };
-
-    const handleAddCard = async (columnId, title) => {
-        try {
-            const response = await axios.post(`${apiUrl}/cards`, {
-                title,
-                columnId
-            });
-            const newCard = response.data;
-            setColumns(columns.map(column => {
-                if (column.id === columnId) {
-                    return { ...column, cards: [...column.cards, newCard] };
-                }
-                return column;
-            }));
-        } catch (error) {
-            console.error('Erro ao adicionar card:', error);
-        }
-    };
-
-    const onDragEnd = async (result) => {
-        const { destination, source, draggableId, type } = result;
-
-        if (!destination) return;
-
-        if (
-            destination.droppableId === source.droppableId &&
-            destination.index === source.index
-        ) {
-            return;
-        }
-
-        if (type === 'column') {
-            const newColumns = Array.from(columns);
-            const [removed] = newColumns.splice(source.index, 1);
-            newColumns.splice(destination.index, 0, removed);
-            setColumns(newColumns);
-            return;
-        }
-
-        const sourceColumn = columns.find(col => col.id === source.droppableId);
-        const destColumn = columns.find(col => col.id === destination.droppableId);
-        const sourceCards = Array.from(sourceColumn.cards);
-        const destCards = source.droppableId === destination.droppableId
-            ? sourceCards
-            : Array.from(destColumn.cards);
-
-        const [removed] = sourceCards.splice(source.index, 1);
-        destCards.splice(destination.index, 0, removed);
-
-        const newColumns = columns.map(col => {
-            if (col.id === source.droppableId) {
-                return { ...col, cards: sourceCards };
+            if(newColumn._destroy) {
+                await axios.delete(`${apiUrl}/columns/${columnIdUpdate}`);
+                setMessage({ text: 'Coluna excluída com sucesso!', type: 'success' });
+            } else {
+                await axios.put(`${apiUrl}/columns/${columnIdUpdate}`, newColumn);
+                setMessage({ text: 'Coluna atualizada com sucesso!', type: 'success' });
             }
-            if (col.id === destination.droppableId) {
-                return { ...col, cards: destCards };
-            }
-            return col;
-        });
-
-        setColumns(newColumns);
-
-        try {
-            await axios.put(`${apiUrl}/cards/${draggableId}/move`, {
-                sourceColumnId: source.droppableId,
-                destinationColumnId: destination.droppableId,
-                sourceIndex: source.index,
-                destinationIndex: destination.index,
-            });
         } catch (error) {
-            console.error('Erro ao mover card:', error);
+            console.error("Erro ao atualizar coluna:", error);
+            setMessage({ text: 'Erro ao atualizar coluna.', type: 'error' });
         }
-    };
-
-    if (isLoading) {
-        return (
-            <div className="board-content">
-                <div className="loading">
-                    <FontAwesomeIcon icon={faSpinner} spin />
-                    <span>Carregando...</span>
-                </div>
-            </div>
-        );
     }
-
     return (
-        <div className="board-content">
-            <DragDropContext onDragEnd={onDragEnd}>
-                <Droppable droppableId="all-columns" direction="horizontal" type="column">
-                    {(provided) => (
-                        <div
-                            className="board-columns"
-                            ref={provided.innerRef}
-                            {...provided.droppableProps}
-                        >
-                            {columns.map((column, index) => (
-                                <Column
-                                    key={column.id}
-                                    column={column}
-                                    index={index}
-                                    onAddCard={handleAddCard}
-                                    onDeleteColumn={handleDeleteColumn}
-                                    onClearColumn={handleClearColumn}
-                                    onUpdateColumnName={handleUpdateColumnName}
-                                    onUpdateColumn={onUpdateColumn}
-                                />
-                            ))}
-                            {provided.placeholder}
-                            <div className="add-column">
-                                <button
-                                    className="add-column-button"
-                                    onClick={handleAddColumn}
-                                    disabled={isAddingColumn}
-                                    title="Adicionar nova coluna"
-                                >
-                                    {isAddingColumn ? (
-                                        <>
-                                            <FontAwesomeIcon icon={faSpinner} spin className="spinner" />
-                                            <span>Adicionando...</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <FontAwesomeIcon icon={faPlus} />
-                                            <span>Adicionar coluna</span>
-                                        </>
-                                    )}
-                                </button>
+        <>
+            <div className="board-columns">
+                <Container
+                    orientation="horizontal"
+                    onDrop={onColumnDrop}
+                    getChildPayload={index => {
+                        console.log('Column payload:', columns[index]); // Debug log
+                        return columns[index];
+                    }}
+                    dragHandleSelector=".column-drag-handle"
+                    dropPlaceholder={{
+                        animationDuration: 150,
+                        showOnTop: true,
+                        className: 'column-drop-preview'
+                    }}
+                >
+                    {columns && columns.length > 0 && columns.map((column, index) => (
+                        <Draggable key={column.id}>
+                            <Column                     
+                                column={column}
+                                onCardDrop={onCardDrop}
+                                onUpdateColumn={onUpdateColumn}
+                            />
+                        </Draggable>
+                    ))}
+                
+                    {isShowAddList ? 
+                        <div className='content-add-column'>
+                            <input 
+                                type='text' 
+                                className="form-control" 
+                                placeholder="Enter column title..." 
+                                ref={inputRef} 
+                                value={valueInput}
+                                onChange={(e) => setValueInput(e.target.value)}
+                            />
+                            <div className='group-btn'>
+                                <button className='btn btn-success' onClick={() => handleAddList()}>Add list</button>
+                                <FontAwesomeIcon icon={faClose} onClick={() => setIsShowAddList(false)} />
                             </div>
                         </div>
-                    )}
-                </Droppable>
-            </DragDropContext>
-        </div>
-    );
+                    : 
+                        <div className='add-new-column' onClick={() => setIsShowAddList(true)}>
+                            <FontAwesomeIcon icon={faPlus} />
+                            Add another column
+                        </div>
+                    }
+                </Container>
+            </div>
+            {message.text && (
+                <div className={`alert alert-${message.type === 'success' ? 'success' : 'danger'}`} role="alert">
+                    {message.text}
+                </div>
+            )}
+        </>
+    )
 }
 
 export default BoardContent;

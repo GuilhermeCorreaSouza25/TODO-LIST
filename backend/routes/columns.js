@@ -1,146 +1,193 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../config/database');
+const pool = require('../services/db');
 const { v4: uuidv4 } = require('uuid');
 const { sendEmail } = require('../services/emailService');
 require('dotenv').config();
 
 const USER_EMAIL = process.env.USER_EMAIL;
 
-// GET all columns
-router.get('/', async (req, res) => {
+// Listar colunas de um board
+router.get('/board/:boardId', async (req, res) => {
+  const { boardId } = req.params;
   try {
-    const [columns] = await pool.query('SELECT * FROM columns');
-    for (let column of columns) {
-      const [cards] = await pool.query('SELECT * FROM cards WHERE columnId = ?', [column.id]);
-      column.cards = cards;
-      column.cardOrder = column.cardOrder ? JSON.parse(column.cardOrder) : [];
-    }
+    const [columns] = await pool.query('SELECT * FROM columns WHERE boardId = ?', [boardId]);
     res.json(columns);
-  } catch (error) {
-    res.status(500).json({ message: 'Erro ao buscar colunas', error });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
-// POST a new column
+// Criar coluna
 router.post('/', async (req, res) => {
-  const { boardId, title } = req.body;
-  if (!boardId || !title) {
-    return res.status(400).json({ message: 'boardId e title são obrigatórios' });
-  }
+  const { boardId, name, cardOrder } = req.body;
   const id = uuidv4();
-  const createdAt = new Date();
   try {
-    await pool.query(
-      'INSERT INTO columns (id, boardId, title, cardOrder, createdAt) VALUES (?, ?, ?, ?, ?)',
-      [id, boardId, title, JSON.stringify([]), createdAt]
-    );
-    const [rows] = await pool.query('SELECT * FROM columns WHERE id = ?', [id]);
-    const newColumn = rows[0];
+    console.log('Criando coluna:', { id, boardId, name, cardOrder });
 
-    // Atualizar columnOrder do board
-    const [boardRows] = await pool.query('SELECT * FROM boards WHERE id = ?', [boardId]);
-    const board = boardRows[0];
-    const columnOrder = board.columnOrder ? JSON.parse(board.columnOrder) : [];
-    columnOrder.push(id);
-    await pool.query('UPDATE boards SET columnOrder = ? WHERE id = ?', [JSON.stringify(columnOrder), boardId]);
-
-    if (USER_EMAIL) {
-      await sendEmail(
-        USER_EMAIL,
-        'Nova Coluna Adicionada!',
-        `Uma nova coluna foi adicionada ao seu quadro: "${title}"`,
-        `<p>Uma nova coluna foi adicionada ao seu quadro: <strong>"${title}"</strong></p>`
-      );
+    // Verificar se o board existe
+    const [boards] = await pool.query('SELECT * FROM boards WHERE id = ?', [boardId]);
+    if (boards.length === 0) {
+      throw new Error(`Board com ID ${boardId} não encontrado`);
     }
 
-    res.status(201).json(newColumn);
-  } catch (error) {
-    res.status(500).json({ message: 'Erro ao adicionar coluna', error });
+    // Converter o cardOrder para JSON string antes de salvar
+    const cardOrderJson = cardOrder ? JSON.stringify(cardOrder) : '[]';
+    
+    // Iniciar uma transação
+    await pool.query('START TRANSACTION');
+    
+    try {
+      // Inserir a coluna
+      const [result] = await pool.query(
+        'INSERT INTO columns (id, boardId, name, cardOrder) VALUES (?, ?, ?, ?)', 
+        [id, boardId, name, cardOrderJson]
+      );
+      
+      console.log('Coluna criada com sucesso:', result);
+
+      // Buscar a coluna recém-criada para confirmar
+      const [columns] = await pool.query('SELECT * FROM columns WHERE id = ?', [id]);
+      if (columns.length === 0) {
+        throw new Error('Coluna não encontrada após criação');
+      }
+
+      // Enviar email de notificação
+      if (USER_EMAIL) {
+        const boardName = boards[0]?.id || 'Quadro';
+        
+        await sendEmail(
+          USER_EMAIL,
+          'Nova Coluna Adicionada',
+          `Uma nova coluna foi adicionada ao quadro`,
+          `
+            <h2>Nova Coluna Adicionada</h2>
+            <p>Uma nova coluna foi adicionada ao seu quadro:</p>
+            <ul>
+              <li><strong>Nome:</strong> ${name}</li>
+              <li><strong>Quadro:</strong> ${boardName}</li>
+              <li><strong>Data:</strong> ${new Date().toLocaleString()}</li>
+            </ul>
+          `
+        );
+      }
+
+      // Commit da transação
+      await pool.query('COMMIT');
+      
+      // Retornar a coluna criada com o cardOrder como array
+      res.status(201).json({ 
+        id, 
+        boardId, 
+        name, 
+        cardOrder: cardOrder || [] 
+      });
+    } catch (err) {
+      // Rollback em caso de erro
+      await pool.query('ROLLBACK');
+      throw err;
+    }
+  } catch (err) {
+    console.error('Erro ao criar coluna:', err);
+    res.status(500).json({ 
+      error: 'Erro ao criar coluna',
+      details: err.message 
+    });
   }
 });
 
-// PUT update a column
+// Editar coluna
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { title, cardOrder } = req.body;
+  const { name, cardOrder } = req.body;
+  
   try {
-    const [result] = await pool.query(
-      'UPDATE columns SET title = COALESCE(?, title), cardOrder = COALESCE(?, cardOrder) WHERE id = ?',
-      [title, cardOrder ? JSON.stringify(cardOrder) : null, id]
-    );
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Coluna não encontrada' });
+    console.log('Atualizando coluna:', { id, name, cardOrder });
+    
+    if (name) {
+      await pool.query('UPDATE columns SET name = ? WHERE id = ?', [name, id]);
     }
-    const [rows] = await pool.query('SELECT * FROM columns WHERE id = ?', [id]);
-    const updatedColumn = rows[0];
-    const [cards] = await pool.query('SELECT * FROM cards WHERE columnId = ?', [id]);
-    updatedColumn.cards = cards;
-    updatedColumn.cardOrder = updatedColumn.cardOrder ? JSON.parse(updatedColumn.cardOrder) : [];
+    
+    if (cardOrder) {
+      // Converter o array para JSON string antes de salvar
+      const cardOrderJson = JSON.stringify(cardOrder);
+      await pool.query('UPDATE columns SET cardOrder = ? WHERE id = ?', [cardOrderJson, id]);
+    }
+
+    // Buscar a coluna atualizada
+    const [columns] = await pool.query('SELECT * FROM columns WHERE id = ?', [id]);
+    
+    if (columns.length === 0) {
+      throw new Error('Coluna não encontrada após atualização');
+    }
+
+    // Converter o cardOrder de volta para array
+    const updatedColumn = {
+      ...columns[0],
+      cardOrder: columns[0].cardOrder ? JSON.parse(columns[0].cardOrder) : []
+    };
+
     res.json(updatedColumn);
-  } catch (error) {
-    res.status(500).json({ message: 'Erro ao atualizar coluna', error });
+  } catch (err) {
+    console.error('Erro ao atualizar coluna:', err);
+    res.status(500).json({ 
+      error: 'Erro ao atualizar coluna',
+      details: err.message 
+    });
   }
 });
 
-// DELETE a column
+// Excluir coluna
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const [rows] = await pool.query('SELECT * FROM columns WHERE id = ?', [id]);
-    if (rows.length === 0) {
-      return res.status(404).json({ message: 'Coluna não encontrada' });
+    // Buscar informações da coluna antes de excluir
+    const [columns] = await pool.query('SELECT c.*, b.id as boardId FROM columns c JOIN boards b ON c.boardId = b.id WHERE c.id = ?', [id]);
+    
+    if (columns.length > 0) {
+      const column = columns[0];
+      
+      // Excluir a coluna
+      await pool.query('DELETE FROM columns WHERE id = ?', [id]);
+      
+      // Enviar email de notificação
+      if (USER_EMAIL) {
+        await sendEmail(
+          USER_EMAIL,
+          'Coluna Removida',
+          `A coluna "${column.name}" foi removida`,
+          `
+            <h2>Coluna Removida</h2>
+            <p>Uma coluna foi removida do seu quadro:</p>
+            <ul>
+              <li><strong>Nome:</strong> ${column.name}</li>
+              <li><strong>Quadro:</strong> ${column.boardId}</li>
+              <li><strong>Data:</strong> ${new Date().toLocaleString()}</li>
+            </ul>
+          `
+        );
+      }
     }
-    const deletedColumn = rows[0];
-    await pool.query('DELETE FROM columns WHERE id = ?', [id]);
 
-    // Atualizar columnOrder do board
-    const [boardRows] = await pool.query('SELECT * FROM boards WHERE id = ?', [deletedColumn.boardId]);
-    const board = boardRows[0];
-    const columnOrder = board.columnOrder ? JSON.parse(board.columnOrder) : [];
-    const newColumnOrder = columnOrder.filter(columnId => columnId !== id);
-    await pool.query('UPDATE boards SET columnOrder = ? WHERE id = ?', [JSON.stringify(newColumnOrder), deletedColumn.boardId]);
-
-    if (USER_EMAIL) {
-      await sendEmail(
-        USER_EMAIL,
-        'Coluna Removida',
-        `A coluna "${deletedColumn.title}" foi removida do seu quadro.`,
-        `<p>A coluna "<strong>${deletedColumn.title}</strong>" foi removida do seu quadro.</p>`
-      );
-    }
-
-    res.status(200).json({ message: 'Coluna removida com sucesso', column: deletedColumn });
-  } catch (error) {
-    res.status(500).json({ message: 'Erro ao remover coluna', error });
+    res.status(204).end();
+  } catch (err) {
+    console.error('Erro ao excluir coluna:', err);
+    res.status(500).json({ 
+      error: 'Erro ao excluir coluna',
+      details: err.message 
+    });
   }
 });
 
-// Limpar coluna (remover todos os cards)
+// Limpar coluna (apagar todos os cards da coluna)
 router.delete('/:id/clear', async (req, res) => {
   const { id } = req.params;
   try {
-    const [rows] = await pool.query('SELECT * FROM columns WHERE id = ?', [id]);
-    if (rows.length === 0) {
-      return res.status(404).json({ message: 'Coluna não encontrada' });
-    }
-    const column = rows[0];
     await pool.query('DELETE FROM cards WHERE columnId = ?', [id]);
-    await pool.query('UPDATE columns SET cardOrder = ? WHERE id = ?', [JSON.stringify([]), id]);
-
-    if (USER_EMAIL) {
-      await sendEmail(
-        USER_EMAIL,
-        'Coluna Limpa',
-        `Todos os cards da coluna "${column.title}" foram removidos.`,
-        `<p>Todos os cards da coluna "<strong>${column.title}</strong>" foram removidos.</p>`
-      );
-    }
-
-    res.status(200).json({ message: 'Coluna limpa com sucesso', column });
-  } catch (error) {
-    res.status(500).json({ message: 'Erro ao limpar coluna', error });
+    res.status(204).end();
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
-module.exports = router; 
+module.exports = { router }; 

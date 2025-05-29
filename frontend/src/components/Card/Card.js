@@ -1,147 +1,126 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Draggable } from '@hello-pangea/dnd';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClock, faPaperclip, faEllipsisH, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
-import Form from 'react-bootstrap/Form';
-import axios from 'axios';
 import './Card.scss';
+import imgDesign from '../../assets/img-design.png';
+import axios from 'axios';
+import { useState, useRef } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEllipsisH, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+import Dropdown from 'react-bootstrap/Dropdown';
+import ConfirmModal from '../Common/ConfirmModal';
+import LoadingSpinner from '../Common/LoadingSpinner';
+import { MODAL_ACTION_CLOSE, MODAL_ACTION_CONFIRM } from '../../utilities/constant';
+import { Form } from 'react-bootstrap';
 
-const Card = ({ card, index, onEdit, onDelete }) => {
-    const [isActionsExpanded, setIsActionsExpanded] = useState(false);
+const apiUrl = process.env.REACT_APP_API_URL;
+
+const Card = ({ card, isFirstCard, onUpdateCard }) => {
     const [isEditing, setIsEditing] = useState(false);
-    const [editedTitle, setEditedTitle] = useState(card.title);
+    const [title, setTitle] = useState(card.title);
+    const [isLoading, setIsLoading] = useState(false);
+    const [showModalDelete, setShowModalDelete] = useState(false);
     const inputRef = useRef(null);
-    const isOverdue = card.dueDate && new Date(card.dueDate) < new Date();
-    const isDueSoon = card.dueDate && !isOverdue && new Date(card.dueDate) - new Date() < 24 * 60 * 60 * 1000;
-    const apiUrl = process.env.REACT_APP_API_URL;
 
-    useEffect(() => {
-        if (isEditing && inputRef.current) {
-            inputRef.current.focus();
-            inputRef.current.select();
-        }
-    }, [isEditing]);
-
-    const handleActionsClick = (e) => {
-        e.stopPropagation();
-        setIsActionsExpanded(!isActionsExpanded);
-    };
-
-    const handleEdit = (e) => {
-        e.stopPropagation();
-        setIsActionsExpanded(false);
-        setIsEditing(true);
-    };
-
-    const handleDelete = (e) => {
-        e.stopPropagation();
-        setIsActionsExpanded(false);
-        onDelete(card);
-    };
-
-    const handleTitleChange = (e) => {
-        setEditedTitle(e.target.value);
-    };
-
-    const handleTitleSubmit = async () => {
-        if (editedTitle.trim() === '') {
-            setEditedTitle(card.title);
+    const handleEdit = async () => {
+        if (title.trim() === '') {
+            setTitle(card.title);
             setIsEditing(false);
             return;
         }
 
-        if (editedTitle !== card.title) {
-            try {
-                const response = await axios.put(`${apiUrl}/cards/${card.id}`, {
-                    title: editedTitle
-                });
-                onEdit(response.data);
-            } catch (error) {
-                console.error('Erro ao atualizar título do card:', error);
-                setEditedTitle(card.title);
-            }
-        }
-        setIsEditing(false);
-    };
-
-    const handleKeyDown = (e) => {
-        if (e.key === 'Enter') {
-            handleTitleSubmit();
-        } else if (e.key === 'Escape') {
-            setEditedTitle(card.title);
+        setIsLoading(true);
+        try {
+            await axios.put(`${apiUrl}/tasks/${card.id}`, { title });
+            onUpdateCard({ ...card, title });
+        } catch (error) {
+            console.error("Erro ao editar card:", error);
+        } finally {
+            setIsLoading(false);
             setIsEditing(false);
         }
     };
 
-    return (
-        <Draggable draggableId={card.id} index={index}>
-            {(provided) => (
-                <div
-                    className="card"
-                    ref={provided.innerRef}
-                    {...provided.draggableProps}
-                    {...provided.dragHandleProps}
-                >
-                    <div className="card-content">
-                        <div className="card-header">
-                            <div className="card-title">
-                                {isEditing ? (
-                                    <Form.Control
-                                        size="sm"
-                                        type="text"
-                                        value={editedTitle}
-                                        onChange={handleTitleChange}
-                                        onBlur={handleTitleSubmit}
-                                        onKeyDown={handleKeyDown}
-                                        ref={inputRef}
-                                        className="card-title-input"
-                                    />
-                                ) : (
-                                    <div onClick={handleEdit}>{card.title}</div>
-                                )}
-                            </div>
-                            <div className="card-actions">
-                                <button onClick={handleActionsClick}>
-                                    <FontAwesomeIcon icon={faEllipsisH} />
-                                </button>
-                                {isActionsExpanded && (
-                                    <div className="card-actions-expanded">
-                                        <button onClick={handleEdit}>
-                                            <FontAwesomeIcon icon={faEdit} />
-                                            Editar
-                                        </button>
-                                        <button onClick={handleDelete} className="delete">
-                                            <FontAwesomeIcon icon={faTrash} />
-                                            Deletar
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+    const handleDelete = async () => {
+        setIsLoading(true);
+        try {
+            await axios.delete(`${apiUrl}/tasks/${card.id}`);
+            onUpdateCard({ ...card, _destroy: true });
+        } catch (err) {
+            console.error("Erro ao excluir card:", err);
+        } finally {
+            setIsLoading(false);
+            setShowModalDelete(false);
+        }
+    };
 
-                        {card.description && (
-                            <div className="card-description">{card.description}</div>
-                        )}
-                        
-                        <div className="card-footer">
-                            {card.dueDate && (
-                                <div className={`card-date ${isOverdue ? 'overdue' : isDueSoon ? 'due-soon' : ''}`}>
-                                    <FontAwesomeIcon icon={faClock} />
-                                    <span>{new Date(card.dueDate).toLocaleDateString()}</span>
-                                </div>
-                            )}
-                            {card.attachments && card.attachments.length > 0 && (
-                                <div className="card-attachments">
-                                    <FontAwesomeIcon icon={faPaperclip} />
-                                    <span>{card.attachments.length}</span>
-                                </div>
-                            )}
-                        </div>
+    const handleEditClick = () => {
+        setIsEditing(true);
+        // Usar setTimeout para garantir que o input esteja renderizado antes de focar
+        setTimeout(() => {
+            if (inputRef.current) {
+                inputRef.current.focus();
+            }
+        }, 0);
+    };
+
+    const onModalAction = (type) => {
+        if (type === MODAL_ACTION_CLOSE) {
+            setShowModalDelete(false);
+        }
+        if (type === MODAL_ACTION_CONFIRM) {
+            handleDelete();
+        }
+    };
+
+    return (
+        <>
+            <div className="card-item">
+                {isFirstCard && <img src={imgDesign} alt="img-design" onMouseDown={event => event.preventDefault()}/>}
+                <div className="card-content">
+                    {isEditing ? (
+                        <Form.Control
+                            size="sm"
+                            type="text"
+                            value={title}
+                            className='customize-input-card'
+                            onClick={handleEditClick}
+                            onChange={(event) => setTitle(event.target.value)}
+                            spellCheck="false"
+                            onBlur={handleEdit}
+                            onMouseDown={(event) => event.preventDefault()}
+                            ref={inputRef}
+                        />
+                    ) : (
+                        <div className="card-title" onClick={handleEditClick}>{card.title}</div>
+                    )}
+                    <div className="card-actions">
+                        <Dropdown>
+                            <Dropdown.Toggle
+                                variant=""
+                                id="dropdown-basic"
+                                size='sm'
+                            >
+                                <FontAwesomeIcon icon={faEllipsisH} />
+                            </Dropdown.Toggle>
+
+                            <Dropdown.Menu>
+                                <Dropdown.Item onClick={handleEditClick} disabled={isLoading}>
+                                    <FontAwesomeIcon icon={faEdit} /> Editar
+                                </Dropdown.Item>
+                                <Dropdown.Item onClick={() => setShowModalDelete(true)} disabled={isLoading}>
+                                    {isLoading ? <LoadingSpinner /> : 'Excluir card'}
+                                </Dropdown.Item>
+                            </Dropdown.Menu>
+                        </Dropdown>
                     </div>
                 </div>
-            )}
-        </Draggable>
+            </div>
+            <ConfirmModal
+                show={showModalDelete}
+                title="Excluir Card"
+                content={`Tem certeza que deseja excluir o card: <b>${card.title}</b>? Esta ação não pode ser desfeita.`}
+                onAction={onModalAction}
+            />
+        </>
     );
-};
+}
 
 export default Card;

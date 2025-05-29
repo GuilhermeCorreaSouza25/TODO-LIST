@@ -1,24 +1,32 @@
 const express = require('express');
 const cors = require('cors');
-const boardRoutes = require('./routes/boards');
-const columnRoutes = require('./routes/columns');
-const cardRoutes = require('./routes/cards');
-const notificationService = require('./services/notificationService');
+const dotenv = require('dotenv');
+const taskRoutes = require('./routes/tasks').router; // Acessa o router exportado
+const { scheduleUpcomingTaskReminders } = require('./services/notificationService');
+const boardRoutes = require('./routes/boards').router;
+const columnRoutes = require('./routes/columns').router;
+
+dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 3001;
 
-app.use(cors());
-app.use(express.json());
+// Middlewares
+app.use(cors()); // Permite requisições de diferentes origens (ex: frontend em localhost:3000)
+app.use(express.json()); // Para parsear JSON no corpo das requisições
 
-// Rotas
+// Routes
+app.use('/api/tasks', taskRoutes);
 app.use('/api/boards', boardRoutes);
 app.use('/api/columns', columnRoutes);
-app.use('/api/cards', cardRoutes);
 
-// Iniciar o serviço de notificações
-notificationService.checkUpcomingCards();
+app.get('/', (req, res) => {
+  res.send('Backend da To-Do List está rodando!');
+});
 
-const PORT = process.env.PORT || 3001;
+// Iniciar o agendador de notificações
+scheduleUpcomingTaskReminders();
+
 app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
+  console.log(`Backend server rodando na porta ${PORT}`);
 });

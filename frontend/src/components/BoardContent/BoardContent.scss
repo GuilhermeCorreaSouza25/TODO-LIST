@@ -6,9 +6,6 @@
     margin: 0 $gap $gap 0;
     gap: $gap;
     overflow-x: auto;
-    padding: $spacing-sm;
-    min-height: calc(100vh - 200px);
-    align-items: flex-start;
 
     &::-webkit-scrollbar {
       -webkit-appearance: none;
@@ -19,31 +16,24 @@
     }
 
     &::-webkit-scrollbar-thumb {
-      background-color: rgba($primary-color, 0.3);
-      border-radius: 5px;
-      border: 2px solid $column-bg-color;
-
-      &:hover {
-        background-color: rgba($primary-color, 0.4);
-      }
+      background-color: rgba(255, 255, 255, .24);
+      border-radius: 5px solid $list-bg-color;
     }
 
     .column-drop-preview {
-      background-color: rgba($primary-color, 0.15);
-      border: 2px dashed $primary-light;
+      background-color: rgba(150, 150, 200, 0.1);
+      border: 1px dashed #abc;
       margin: 5px 45px 5px 5px;
-      border-radius: $border-radius-md;
     }
 
     .card-ghost {
         transition: transform 0.18s ease;
-        transform: rotateZ(5deg);
-        box-shadow: $shadow-lg;
+        transform: rotateZ(5deg)
     }
 
     .card-ghost-drop{
         transition: transform 0.18s ease-in-out;
-        transform: rotateZ(0deg);
+        transform: rotateZ(0deg)
     }
 
     .add-new-column{
@@ -52,249 +42,86 @@
         line-height: 32px;
         padding: 4px 0 4px 15px;
         cursor: pointer;
-        color: $text-primary;
+        color: white;
         margin-left: $gap;
         font-size: 15px;
-        background-color: rgba($primary-color, 0.2);
+        background-color: hsla(0, 0, 100, .24);
         border-radius: $column-border-radius;
         display: flex;
         align-items: center;
         gap: 8px;
-        transition: all $transition-speed;
 
         svg {
             font-size: 14px;
-            color: $primary-light;
+            color: white;
         }
 
         &:hover {
-            background-color: rgba($primary-color, 0.3);
-            color: $primary-light;
+            background-color: hsla(0, 0, 100, .36);
         }
     }
 
     .content-add-column{
         width: 250px;
-        padding: $spacing-sm;
+        padding: 8px;
         margin-left: $gap;
-        background-color: rgba($primary-color, 0.15);
+        background-color: hsla(0, 0, 100, .36);
         border-radius: $column-border-radius;
-        border: 1px solid rgba($primary-color, 0.2);
 
         input.form-control {
             width: 100%;
-            padding: $spacing-sm;
-            border: 2px solid $border-color;
-            border-radius: $border-radius-sm;
+            padding: 8px;
+            border: 2px solid #dfe1e6;
+            border-radius: 3px;
             font-size: 14px;
-            background-color: $card-bg-color;
-            color: $text-primary;
-            transition: all $transition-speed;
+            background-color: white;
+            color: #172b4d;
+            transition: border-color 0.2s ease;
 
             &:focus {
                 outline: none;
-                border-color: $primary-color;
-                box-shadow: 0 0 0 2px rgba($primary-color, 0.3);
+                border-color: #4c9aff;
             }
 
             &::placeholder {
-                color: $text-muted;
+                color: #6b778c;
             }
         }
 
         .group-btn{
-            padding-top: $spacing-sm;
+            padding-top: 10px;
             display: flex;
             align-items: center;
-            gap: $spacing-sm;
+            gap: 8px;
 
             button {
-                padding: $spacing-sm $spacing-md;
-                border-radius: $border-radius-sm;
+                padding: 6px 12px;
+                border-radius: 3px;
                 border: none;
                 cursor: pointer;
                 font-size: 14px;
                 font-weight: 500;
-                background-color: $primary-color;
+                background-color: #5aac44;
                 color: white;
-                transition: all $transition-speed;
+                transition: background-color 0.2s ease;
 
                 &:hover {
-                    background-color: $primary-hover;
-                    transform: translateY(-1px);
-                }
-
-                &:active {
-                    transform: translateY(0);
+                    background-color: #61bd4f;
                 }
             }
 
             svg {
                 font-size: 24px;
-                color: $text-muted;
+                color: #888;
                 cursor: pointer;
-                transition: all $transition-speed;
+                transition: color 0.2s ease;
 
                 &:hover {
-                    color: $primary-light;
-                    transform: scale(1.1);
+                    color: #333;
                 }
             }
         }
     }
 
-    .add-column {
-        min-width: 300px;
-        background-color: rgba($primary-color, 0.1);
-        border: 2px dashed $primary-light;
-        border-radius: $border-radius-md;
-        padding: $spacing-md;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        backdrop-filter: blur(5px);
 
-        &:hover {
-            background-color: rgba($primary-color, 0.15);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        button {
-            background: none;
-            border: none;
-            color: $primary-light;
-            font-size: 15px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: $spacing-sm;
-            cursor: pointer;
-            padding: $spacing-md;
-            border-radius: $border-radius-sm;
-            transition: all 0.3s ease;
-            letter-spacing: 0.3px;
-
-            &:hover {
-                background-color: rgba($primary-color, 0.2);
-                color: $primary-color;
-                transform: scale(1.02);
-            }
-
-            svg {
-                font-size: 20px;
-                transition: transform 0.3s ease;
-            }
-
-            &:hover svg {
-                transform: rotate(90deg);
-            }
-        }
-    }
-}
-
-.board-content {
-    height: calc(100vh - #{$header-height} - #{$spacing-md});
-    padding: $spacing-lg;
-    overflow-x: auto;
-    overflow-y: hidden;
-    background: linear-gradient(to bottom right, $board-bg-color, darken($board-bg-color, 5%));
-    position: relative;
-
-    &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 100px;
-        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), transparent);
-        pointer-events: none;
-    }
-
-    .board-columns {
-        display: flex;
-        align-items: flex-start;
-        gap: $spacing-md;
-        min-height: 100%;
-        padding-bottom: $spacing-md;
-
-        &::-webkit-scrollbar {
-            height: 8px;
-        }
-
-        &::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        &::-webkit-scrollbar-thumb {
-            background: rgba($primary-color, 0.3);
-            border-radius: $border-radius-sm;
-            border: 2px solid $board-bg-color;
-
-            &:hover {
-                background: rgba($primary-color, 0.4);
-            }
-        }
-    }
-
-    .column-drop-preview {
-        background-color: rgba($primary-color, 0.15);
-        border: 2px dashed $primary-light;
-        border-radius: $border-radius-md;
-        margin: 5px;
-        min-width: 300px;
-    }
-
-    .loading {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-        color: $text-muted;
-        font-size: 16px;
-        gap: $spacing-md;
-        font-weight: 500;
-
-        .spinner {
-            width: 28px;
-            height: 28px;
-            border: 3px solid rgba($primary-color, 0.3);
-            border-top-color: $primary-color;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-    }
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-// Melhorias na scrollbar
-.board-content::-webkit-scrollbar {
-    height: 14px;
-}
-
-.board-content::-webkit-scrollbar-track {
-    background: $column-bg-color;
-    border-radius: $border-radius-lg;
-    margin: 0 10px;
-}
-
-.board-content::-webkit-scrollbar-thumb {
-    background: $text-muted;
-    border-radius: $border-radius-lg;
-    border: 4px solid $column-bg-color;
-    transition: all 0.3s ease;
-
-    &:hover {
-        background: darken($text-muted, 10%);
-        border-width: 3px;
-    }
 }

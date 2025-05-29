@@ -1,365 +1,204 @@
 @import '../../_settings.scss';
 
-.column {
-  width: 300px;
-  min-width: 300px;
-  margin-right: $spacing-md;
-  background-color: $column-bg-color;
-  border-radius: $border-radius-md;
-  box-shadow: $shadow-sm;
-  display: flex;
-  flex-direction: column;
-  max-height: calc(100vh - #{$header-height} - #{$spacing-lg});
-  border: 1px solid $border-color;
-
-  .column-header {
-    padding: $spacing-md;
+.column{
+    flex: 0 0 auto;
+    width: 300px;
+    margin-right: 8px;
+    height: fit-content;
+    max-height: calc(100vh - 24px - 58px);
     display: flex;
     flex-direction: column;
-    gap: $spacing-md;
-    border-bottom: 1px solid $border-color;
-    background-color: rgba($primary-color, 0.15);
-    border-radius: $border-radius-md $border-radius-md 0 0;
+    background-color: #ebecf0;
+    border-radius: 3px;
 
-    .column-title-container {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      padding: $spacing-xs;
-      background-color: rgba($primary-color, 0.1);
-      border-radius: $border-radius-sm;
+    // &:not(:last-child){
+    //     margin-left: $gap;
+    // }
 
-      .column-title {
-        font-size: clamp(14px, 2vw, 16px);
-        font-weight: 600;
-        color: $text-primary;
+    margin-left: $gap;
+
+    > *{
+        background-color: $list-bg-color;
+        color: #333;
+        padding: 0 8px;
+    }
+
+    .column-drag-handle {
+        padding: 8px;
         display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: $spacing-xs;
-        flex: 1;
-        min-width: 0;
-        padding: $spacing-xs;
-        cursor: pointer;
-        transition: all 0.3s ease;
+        height: $column-header-height;
+        border-top-left-radius: $column-border-radius;
+        border-top-right-radius: $column-border-radius;
 
-        &:hover {
-          color: $primary-light;
+        .column-name {
+            flex: 1;
+            margin-right: 8px;
+
+            .column-title {
+                font-weight: bold;
+                cursor: pointer;
+                padding: 4px 8px;
+                border-radius: 3px;
+                transition: background-color 0.2s;
+
+                &:hover {
+                    background-color: rgba(0, 0, 0, 0.1);
+                }
+            }
+
+            .customize-input-column {
+                font-weight: bold;
+                background-color: #fff;
+                border: 2px solid #0079bf;
+                box-shadow: 0 0 0 2px rgba(0, 121, 191, 0.2);
+                
+                &:focus {
+                    box-shadow: 0 0 0 2px rgba(0, 121, 191, 0.4);
+                }
+
+                &:disabled {
+                    background-color: #f4f5f7;
+                    border-color: #dfe1e6;
+                    cursor: not-allowed;
+                }
+            }
         }
 
-        .column-icon {
-          color: $primary-light;
-          flex-shrink: 0;
-          font-size: 18px;
+        .column-dropdown {
+            .dropdown-toggle {
+                padding: 2px 7px;
+                border-radius: 3px;
+                transition: background-color 0.2s;
+
+                &::after {
+                    display: none;
+                }
+
+                &:hover {
+                    background-color: #091e4214;
+                }
+
+                &:focus {
+                    outline: none !important;
+                    box-shadow: none !important;
+                }
+
+                svg {
+                    font-size: 16px;
+                    color: #6b778c;
+                }
+            }
         }
+    }
 
-        .customize-input-column {
-          flex: 1;
-          min-width: 0;
-          background: transparent;
-          border: none;
-          color: $text-primary;
-          font-size: inherit;
-          font-weight: inherit;
-          padding: $spacing-xs;
-          border-radius: $border-radius-sm;
-          margin: -$spacing-xs;
-          transition: all 0.3s ease;
-
-          &:hover {
-            background-color: rgba($primary-color, 0.1);
-          }
-
-          &:focus {
-            outline: 2px solid $primary-light;
-            outline-offset: 2px;
-            background-color: rgba($primary-color, 0.15);
-            box-shadow: 0 0 0 2px rgba($primary-color, 0.2);
-          }
-        }
-      }
-
-      .column-menu {
-        position: relative;
-        
-        .menu-trigger {
-          background: none;
-          border: none;
-          padding: $spacing-xs;
-          cursor: pointer;
-          color: $text-muted;
-          transition: all 0.3s ease;
-          border-radius: $border-radius-sm;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 32px;
-          height: 32px;
-
-          &:hover {
-            color: $primary-light;
-            background-color: rgba($primary-color, 0.2);
-          }
-
-          svg {
-            font-size: 16px;
-          }
-        }
-
-        .column-actions {
-          position: absolute;
-          top: 100%;
-          right: 0;
-          background-color: $column-bg-color;
-          border-radius: $border-radius-sm;
-          box-shadow: $shadow-md;
-          min-width: 200px;
-          z-index: 1000;
-          margin-top: $spacing-xs;
-          border: 1px solid $border-color;
-          display: none;
-
-          &.show {
-            display: block;
-          }
-
-          button {
-            width: 100%;
-            background: none;
-            border: none;
-            padding: $spacing-sm;
-            cursor: pointer;
-            color: $text-muted;
-            transition: all 0.3s ease;
+    .add-new-card{
+        padding-bottom: 10px;
+        .group-btn{
+            padding-top: 10px;
             display: flex;
             align-items: center;
-            justify-content: flex-start;
-            gap: $spacing-sm;
-            font-size: 14px;
-            font-weight: 500;
+            gap: 8px;
+
+            button {
+                padding: 6px 12px;
+                border-radius: 3px;
+                border: none;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+                color: white;
+                transition: background-color 0.2s ease;
+            }
 
             svg {
-              font-size: 16px;
-              width: 20px;
-              text-align: center;
-            }
+                font-size: 24px;
+                color: #b3b3b3;
+                cursor: pointer;
+                transition: color 0.2s ease;
 
-            &:hover {
-              color: $primary-light;
-              background-color: rgba($primary-color, 0.2);
+                &:hover {
+                    color: #333;
+                }
             }
-
-            &.delete:hover {
-              color: $error-color;
-              background-color: rgba($error-color, 0.2);
-            }
-          }
         }
-      }
-    }
-  }
-
-  .column-drag-handle {
-    cursor: grab;
-    padding: $spacing-xs;
-    color: $text-muted;
-    transition: color $transition-speed;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    svg {
-      font-size: 16px;
     }
 
-    &:hover {
-      color: $primary-light;
-    }
-
-    &:active {
-      cursor: grabbing;
-    }
-  }
-
-  .card-list {
-    padding: $spacing-sm;
-    flex: 1;
-    overflow-y: auto;
-    min-height: 100px;
-    scroll-behavior: smooth;
-
-    &::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    &::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: rgba($primary-color, 0.3);
-      border-radius: $border-radius-sm;
-      border: 2px solid $column-bg-color;
-
-      &:hover {
-        background: rgba($primary-color, 0.4);
-      }
-    }
-  }
-
-  .add-new-card {
-    padding: $spacing-sm;
-    border-top: 1px solid $border-color;
-
-    button {
-      width: 100%;
-      padding: $spacing-sm;
-      background: none;
-      border: none;
-      color: $primary-light;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: $spacing-xs;
-      font-weight: 500;
-      transition: background-color $transition-speed, transform $transition-speed;
-      border-radius: $border-radius-sm;
-
-      svg {
-        font-size: 16px;
-      }
-
-      &:hover {
-        background-color: rgba($primary-color, 0.2);
-        color: $primary-color;
-        transform: translateY(-1px);
-      }
-
-      &:active {
-        transform: translateY(0);
-      }
-
-      &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        transform: none;
-      }
-    }
-  }
-
-  footer {
-    padding: $spacing-sm;
-    border-top: 1px solid $border-color;
-    background-color: rgba($primary-color, 0.05);
-
-    textarea {
-      width: 100%;
-      padding: $spacing-sm;
-      border: 2px solid $border-color;
-      border-radius: $border-radius-sm;
-      font-size: 14px;
-      background-color: $card-bg-color;
-      color: $text-primary;
-      transition: border-color $transition-speed, box-shadow $transition-speed;
-      resize: none;
-      min-height: 80px;
-
-      &:focus {
-        outline: none;
-        border-color: $primary-color;
-        box-shadow: 0 0 0 2px rgba($primary-color, 0.3);
-      }
-
-      &::placeholder {
-        color: $text-muted;
-      }
-    }
-
-    .group-btn {
-      display: flex;
-      align-items: center;
-      gap: $spacing-sm;
-      margin-top: $spacing-sm;
-
-      button {
-        padding: $spacing-sm $spacing-md;
-        border-radius: $border-radius-sm;
-        border: none;
+    footer{
+        padding-left: 10px;
+        height: $column-footer-height;
+        line-height: $column-footer-height;
+        border-bottom-left-radius: $column-border-radius;
+        border-bottom-right-radius: $column-border-radius;
         cursor: pointer;
-        font-size: 14px;
-        font-weight: 500;
-        background-color: $primary-color;
-        color: white;
-        transition: background-color $transition-speed, transform $transition-speed;
+        transition: background-color 0.2s ease;
+        color: #888;
+        display: flex;
+        align-items: center;
 
         &:hover {
-          background-color: $primary-hover;
-          transform: translateY(-1px);
+            background-color: darken($list-bg-color, 5%);
         }
 
-        &:active {
-          transform: translateY(0);
+        svg {
+            font-size: 14px;
+            color: #6b778c;
+            margin-right: 8px;
+            transition: color 0.2s ease;
         }
-      }
 
-      svg {
-        font-size: 24px;
-        color: $text-muted;
-        cursor: pointer;
-        transition: transform $transition-speed, color $transition-speed;
-        padding: 4px;
-        border-radius: $border-radius-sm;
-
-        &:hover {
-          color: $primary-light;
-          background-color: rgba($primary-color, 0.1);
-          transform: scale(1.1);
+        &:hover svg {
+            color: #333;
         }
-      }
+
+        .footer-action{
+            margin-left: 5px;
+            cursor:pointer;
+            &:hover{
+                color: #333;
+            }
+        }
     }
-  }
 
-  @media (max-width: $mobile) {
-    width: 100%;
-    margin-right: 0;
-  }
-}
+    div.card-list{
+        list-style-type: none;
+        margin: 0;
+        max-height: calc(100% - #{$column-header-height} - #{$column-footer-height});
+        overflow-y: auto;
 
-.column-drop-preview {
-  background-color: rgba($primary-color, 0.15);
-  border: 2px dashed $primary-light;
-  border-radius: $border-radius-md;
-  margin: $spacing-sm 0;
-}
+        &::-webkit-scrollbar {
+        -webkit-appearance: none;
+        }
 
-.column.is-ghost {
-  opacity: 0.5;
-  background: rgba($primary-color, 0.15);
-  border: 2px dashed $primary-light;
-}
+        &::-webkit-scrollbar:vertical {
+        width: 11px;
+        }
 
-.column.is-ghost-drop {
-  opacity: 1;
-  background: $column-bg-color;
-  border: 1px solid $border-color;
-  box-shadow: $shadow-md;
-}
+        &::-webkit-scrollbar-thumb {
+        background-color: adjust-color($list-bg-color, $lightness: -15%);
+        border-right: 5px solid $list-bg-color;
+        border-radius: 8px;
+        background-clip: padding-box;
+        }
 
-.card-ghost {
-  transition: transform 0.18s ease;
-  transform: rotateZ(5deg);
-  font-weight: bold;
-}
+        .card-ghost {
+            transition: transform 0.18s ease;
+            transform: rotateZ(5deg);
+            font-weight: bold;
+        }
 
-.card-ghost-drop {
-  transition: transform 0.18s ease-in-out;
-  transform: rotateZ(0deg);
-}
+        .card-ghost-drop{
+            transition: transform 0.18s ease-in-out;
+            transform: rotateZ(0deg);
+            font-weight: bold;
+        }
 
-.card-drop-preview {
-  background-color: rgba($primary-color, 0.1);
-  border: 2px dashed $primary-color;
-  margin: $spacing-xs;
-  border-radius: $border-radius-md;
+        .card-drop-preview {
+            background-color: rgba(150, 150, 200, 0.1);
+            border: 1px dashed #abc;
+            margin: 5px;
+        }
+
+    }
 }

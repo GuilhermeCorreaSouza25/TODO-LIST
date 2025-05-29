@@ -1,137 +1,32 @@
 @use "sass:color";
 @import "./_settings.scss";
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    line-height: 1.5;
-    background-color: $board-bg-color;
-    color: $text-primary;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.3rem;
+  font-size: 14px;
 }
 
-.app-container {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+.trello-master{
+  display: grid;
+  grid-template-rows: 40px 50px 1fr;
+  height: 100vh;
+  background-color: $board-bg-color;
+  color: $app-main-color;
+
+  .customize-input-column{
+    border:none;
+    cursor:pointer;
+    
+    &:focus{
+      outline: none !important;
+      box-shadow: none !important;
+    }
+    background-color: inherit;
+  }
 }
-
-.app-header {
-    height: $header-height;
-    background-color: $header-bg-color;
-    border-bottom: 1px solid $header-border-color;
-    padding: 0 $spacing-lg;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: relative;
-    z-index: 10;
-    box-shadow: $shadow-md;
-
-    &::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 1px;
-        background: linear-gradient(to right, $primary-color, $primary-light);
-        opacity: 0.5;
-    }
-
-    .header-title {
-        font-size: 20px;
-        font-weight: 600;
-        color: $header-text-color;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-        display: flex;
-        align-items: center;
-        gap: $spacing-sm;
-
-        svg {
-            color: $primary-light;
-            font-size: 24px;
-        }
-    }
-
-    .header-actions {
-        display: flex;
-        align-items: center;
-        gap: $spacing-md;
-
-        button {
-            background: none;
-            border: none;
-            color: $header-text-color;
-            cursor: pointer;
-            padding: $spacing-sm;
-            border-radius: $border-radius-sm;
-            transition: all $transition-speed;
-            display: flex;
-            align-items: center;
-            gap: $spacing-xs;
-            font-weight: 500;
-
-            &:hover {
-                color: $primary-light;
-                background-color: rgba($primary-color, 0.2);
-            }
-
-            svg {
-                font-size: 18px;
-            }
-        }
-    }
-}
-
-.app-main {
-    flex: 1;
-    position: relative;
-    background: linear-gradient(135deg, $board-bg-color, darken($board-bg-color, 3%));
-}
-
-.customize-input-column {
-    width: 100%;
-    padding: $spacing-sm;
-    border: 2px solid $border-color;
-    border-radius: $border-radius-sm;
-    font-size: 14px;
-    background-color: $card-bg-color;
-    color: $text-primary;
-    transition: all $transition-speed;
-
-    &:focus {
-        outline: none;
-        border-color: $primary-color;
-        box-shadow: 0 0 0 2px rgba($primary-color, 0.3);
-    }
-
-    &::placeholder {
-        color: $text-muted;
-    }
-}
-
-// Utility classes
-.text-primary { color: $text-primary; }
-.text-muted { color: $text-muted; }
-.text-secondary { color: $text-secondary; }
-.text-success { color: $success-color; }
-.text-error { color: $error-color; }
-.text-warning { color: $warning-color; }
-
-.bg-primary { background-color: $primary-color; }
-.bg-success { background-color: $success-color; }
-.bg-error { background-color: $error-color; }
-.bg-warning { background-color: $warning-color; }
-
-.shadow-sm { box-shadow: $shadow-sm; }
-.shadow-md { box-shadow: $shadow-md; }
-.shadow-lg { box-shadow: $shadow-lg; }
-
-.rounded-sm { border-radius: $border-radius-sm; }
-.rounded-md { border-radius: $border-radius-md; }
-.rounded-lg { border-radius: $border-radius-lg; }

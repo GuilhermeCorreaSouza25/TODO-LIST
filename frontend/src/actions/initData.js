@@ -1,6 +1,46 @@
+import axios from 'axios';
 import imgDesign from '../assets/img-design.png';
 
-export const initData = {
+const apiUrl = process.env.REACT_APP_API_URL;
+
+export const initData = async () => {
+    try {
+        // Buscar boards
+        const boardsResponse = await axios.get(`${apiUrl}/boards`);
+        const boards = boardsResponse.data;
+
+        // Para cada board, buscar suas colunas
+        const boardsWithColumns = await Promise.all(boards.map(async (board) => {
+            const columnsResponse = await axios.get(`${apiUrl}/columns/board/${board.id}`);
+            const columns = columnsResponse.data;
+
+            // Para cada coluna, buscar seus cards
+            const columnsWithCards = await Promise.all(columns.map(async (column) => {
+                const cardsResponse = await axios.get(`${apiUrl}/tasks/column/${column.id}`);
+                const cards = cardsResponse.data;
+
+                return {
+                    ...column,
+                    cardOrder: cards.map(card => card.id),
+                    cards: cards
+                };
+            }));
+
+            return {
+                ...board,
+                columnOrder: columnsWithCards.map(column => column.id),
+                columns: columnsWithCards
+            };
+        }));
+
+        return { boards: boardsWithColumns };
+    } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        return { boards: [] };
+    }
+};
+
+export const initDataMock = {
     boards: [
         {
             id:'board-1',

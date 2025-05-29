@@ -1,355 +1,237 @@
 @import '../../_settings.scss';
 
-.card {
-    background-color: $card-bg-color;
-    border-radius: $border-radius-sm;
-    box-shadow: $shadow-sm;
-    margin-bottom: $spacing-sm;
-    border: 1px solid $border-color;
-    transition: all $transition-speed;
+.card-item {
+    background-color: white;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 3px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+
+    &:dropdown-active{
+        z-index:10;
+    }
 
     &:hover {
-        box-shadow: $shadow-md;
-        transform: translateY(-2px);
-        border-color: rgba($primary-color, 0.3);
+        background-color: #f8f8f8;
+    }
+
+    .card-title {
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .card-dropdown {
+        position: absolute;
+        right: 5px;
+        top: 5px;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+
+        .dropdown-toggle {
+            padding: 2px 7px;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+            color: #6b778c;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+
+            &::after {
+                display: none;
+            }
+
+            &:hover {
+                background-color: #091e4214;
+                color: #172b4d;
+            }
+
+            &:focus {
+                outline: none !important;
+                box-shadow: none !important;
+            }
+
+            svg {
+                font-size: 16px;
+                color: #6b778c;
+            }
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            min-width: 160px;
+            padding: 4px 0;
+            margin: 0;
+            background-color: white;
+            border: none;
+            border-radius: 3px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1002;
+            transform: translateY(4px);
+
+            .dropdown-item {
+                padding: 6px 12px;
+                font-size: 14px;
+                color: #172b4d;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+
+                &:hover {
+                    background-color: #f4f5f7;
+                }
+
+                &:active {
+                    background-color: #e4f0f6;
+                    color: #172b4d;
+                }
+
+                &.text-danger {
+                    color: #dc3545;
+                    &:hover {
+                        background-color: #fff5f5;
+                    }
+                }
+
+                svg {
+                    width: 14px;
+                    height: 14px;
+                }
+            }
+        }
+    }
+
+    &:hover .card-dropdown {
+        opacity: 1;
     }
 
     .card-content {
-        padding: $spacing-md;
-        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+    }
 
-        .card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: $spacing-md;
-            margin-bottom: $spacing-sm;
+    .card-title {
+        flex: 1;
+        padding: 4px;
+        &:hover {
+            background-color: #f4f5f7;
+            border-radius: 3px;
+        }
+    }
 
-            .card-title {
-                font-size: 15px;
-                font-weight: 600;
-                color: $text-primary;
-                word-break: break-word;
-                line-height: 1.4;
-                flex: 1;
-                cursor: pointer;
-                transition: all 0.3s ease;
+    .card-actions {
+        .dropdown-toggle {
+            padding: 4px;
+            color: #6b778c;
+            &:after {
+                display: none;
+            }
+            &:hover {
+                background-color: #f4f5f7;
+                border-radius: 3px;
+                color: #172b4d;
+            }
+        }
+
+        .dropdown-menu {
+            min-width: 160px;
+            padding: 4px 0;
+            margin: 0;
+            border: none;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 3px;
+
+            .dropdown-item {
+                padding: 8px 12px;
+                color: #172b4d;
+                display: flex;
+                align-items: center;
+                gap: 8px;
 
                 &:hover {
-                    color: $primary-light;
+                    background-color: #f4f5f7;
                 }
 
-                .card-title-input {
-                    width: 100%;
-                    background: transparent;
-                    border: 2px solid $primary-light;
-                    border-radius: $border-radius-sm;
-                    padding: $spacing-xs;
-                    font-size: inherit;
-                    font-weight: inherit;
-                    color: inherit;
-                    transition: all 0.3s ease;
-
-                    &:focus {
-                        outline: none;
-                        background-color: rgba($primary-color, 0.1);
-                        box-shadow: 0 0 0 2px rgba($primary-color, 0.2);
-                    }
-                }
-            }
-
-            .card-actions {
-                position: relative;
-                display: flex;
-                gap: $spacing-xs;
-                flex-shrink: 0;
-
-                button {
-                    background: none;
-                    border: none;
-                    padding: 6px;
-                    cursor: pointer;
-                    color: $text-muted;
-                    transition: all $transition-speed;
-                    border-radius: $border-radius-sm;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-
-                    svg {
-                        font-size: 16px;
-                    }
-
-                    &:hover {
-                        color: $primary-light;
-                        background-color: rgba($primary-color, 0.2);
-                        transform: translateY(-1px);
-                    }
-
-                    &:active {
-                        transform: translateY(0);
-                    }
-
-                    &.delete:hover {
-                        color: $error-color;
-                        background-color: rgba($error-color, 0.2);
-                    }
-                }
-
-                .card-actions-expanded {
-                    position: absolute;
-                    top: 100%;
-                    right: 0;
-                    background-color: $column-bg-color;
-                    border: 1px solid $border-color;
-                    border-radius: $border-radius-sm;
-                    box-shadow: $shadow-md;
-                    z-index: 10;
-                    min-width: 150px;
-                    margin-top: $spacing-xs;
-
-                    button {
-                        width: 100%;
-                        padding: $spacing-sm;
-                        justify-content: flex-start;
-                        gap: $spacing-sm;
-                        border-radius: 0;
-
-                        &:first-child {
-                            border-radius: $border-radius-sm $border-radius-sm 0 0;
-                        }
-
-                        &:last-child {
-                            border-radius: 0 0 $border-radius-sm $border-radius-sm;
-                        }
-
-                        &:not(:last-child) {
-                            border-bottom: 1px solid $border-color;
-                        }
-                    }
-                }
-            }
-        }
-
-        .card-description {
-            font-size: 13px;
-            color: $text-muted;
-            margin-bottom: $spacing-sm;
-            word-break: break-word;
-            line-height: 1.5;
-        }
-
-        .card-footer {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: $spacing-sm;
-            margin-top: $spacing-md;
-            padding-top: $spacing-sm;
-            border-top: 1px solid $border-color;
-
-            .card-date {
-                font-size: 12px;
-                color: $text-muted;
-                padding: 4px 8px;
-                background-color: rgba($primary-color, 0.1);
-                border-radius: $border-radius-sm;
-                display: flex;
-                align-items: center;
-                gap: $spacing-xs;
-
-                &.overdue {
-                    color: $error-color;
-                    background-color: rgba($error-color, 0.1);
-                }
-
-                &.due-soon {
-                    color: $warning-color;
-                    background-color: rgba($warning-color, 0.1);
+                &:active {
+                    background-color: #e4f0f6;
+                    color: #172b4d;
                 }
 
                 svg {
-                    font-size: 12px;
-                }
-            }
-
-            .card-attachments {
-                font-size: 12px;
-                color: $text-muted;
-                padding: 4px 8px;
-                background-color: rgba($primary-color, 0.1);
-                border-radius: $border-radius-sm;
-                display: flex;
-                align-items: center;
-                gap: $spacing-xs;
-
-                svg {
-                    font-size: 12px;
+                    width: 14px;
+                    height: 14px;
                 }
             }
         }
     }
+
+    input {
+        width: 100%;
+        border: 2px solid #0079bf;
+        border-radius: 3px;
+        padding: 4px;
+        &:focus {
+            outline: none;
+        }
+    }
+
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 3px;
+    }
+
+    img {
+        width: 100%;
+        height: auto;
+        margin-bottom: 8px;
+    }
 }
 
-.card-drop-preview {
-    background-color: rgba($primary-color, 0.15);
-    border: 2px dashed $primary-light;
-    border-radius: $border-radius-sm;
-    margin: 5px;
+.dropdown.show {
+    .dropdown-menu {
+        display: block;
+        z-index: 1002;
+    }
 }
 
 .card-ghost {
     opacity: 0.5;
-    background: rgba($primary-color, 0.15);
-    border: 2px dashed $primary-light;
+    background: #f8f8f8;
+    z-index: 1;
 }
 
 .card-ghost-drop {
-    opacity: 1;
-    background: $card-bg-color;
-    border: 1px solid $border-color;
-    box-shadow: $shadow-md;
+    background-color: #f8f8f8;
+    z-index: 1;
 }
 
-.card-modal {
-    .modal-content {
-        background-color: $column-bg-color;
-        border: 1px solid $border-color;
-        border-radius: $border-radius-md;
-        box-shadow: $shadow-lg;
+.card-drop-preview {
+    background-color: #f8f8f8;
+    border: 2px dashed #ccc;
+    z-index: 1;
+}
 
-        .modal-header {
-            border-bottom: 1px solid $border-color;
-            padding: $spacing-md;
-            background-color: rgba($primary-color, 0.1);
-            border-radius: $border-radius-md $border-radius-md 0 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+.column-content {
+    position: relative;
+    z-index: 1;
+}
 
-            .modal-title {
-                color: $text-primary;
-                font-size: 18px;
-                font-weight: 600;
-            }
-
-            .close-button {
-                background: none;
-                border: none;
-                color: $text-muted;
-                cursor: pointer;
-                transition: all $transition-speed;
-                padding: 6px;
-                border-radius: $border-radius-sm;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-
-                svg {
-                    font-size: 20px;
-                }
-
-                &:hover {
-                    color: $primary-light;
-                    background-color: rgba($primary-color, 0.2);
-                    transform: translateY(-1px);
-                }
-
-                &:active {
-                    transform: translateY(0);
-                }
-            }
-        }
-
-        .modal-body {
-            padding: $spacing-md;
-
-            .form-group {
-                margin-bottom: $spacing-md;
-
-                label {
-                    display: block;
-                    margin-bottom: $spacing-xs;
-                    color: $text-primary;
-                    font-weight: 500;
-                    font-size: 14px;
-                }
-
-                input, textarea {
-                    width: 100%;
-                    padding: $spacing-sm;
-                    border: 2px solid $border-color;
-                    border-radius: $border-radius-sm;
-                    background-color: $card-bg-color;
-                    color: $text-primary;
-                    transition: all $transition-speed;
-                    font-size: 14px;
-
-                    &:focus {
-                        outline: none;
-                        border-color: $primary-color;
-                        box-shadow: 0 0 0 2px rgba($primary-color, 0.3);
-                    }
-
-                    &::placeholder {
-                        color: $text-muted;
-                    }
-                }
-
-                textarea {
-                    min-height: 100px;
-                    resize: vertical;
-                    line-height: 1.5;
-                }
-            }
-        }
-
-        .modal-footer {
-            border-top: 1px solid $border-color;
-            padding: $spacing-md;
-            display: flex;
-            justify-content: flex-end;
-            gap: $spacing-sm;
-
-            button {
-                padding: $spacing-sm $spacing-md;
-                border-radius: $border-radius-sm;
-                border: none;
-                cursor: pointer;
-                font-size: 14px;
-                font-weight: 500;
-                transition: all $transition-speed;
-
-                &.btn-primary {
-                    background-color: $primary-color;
-                    color: white;
-
-                    &:hover {
-                        background-color: $primary-hover;
-                        transform: translateY(-1px);
-                    }
-
-                    &:active {
-                        transform: translateY(0);
-                    }
-                }
-
-                &.btn-secondary {
-                    background-color: transparent;
-                    color: $text-primary;
-                    border: 1px solid $border-color;
-
-                    &:hover {
-                        background-color: rgba($primary-color, 0.1);
-                        border-color: $primary-color;
-                        transform: translateY(-1px);
-                    }
-
-                    &:active {
-                        transform: translateY(0);
-                    }
-                }
-            }
-        }
-    }
+.cards-container {
+    position: relative;
+    z-index: 1;
 }
