@@ -10,6 +10,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClose, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
+import LoadingSpinner from '../Common/LoadingSpinner';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -22,6 +23,7 @@ const BoardContent = () => {
     const inputRef = useRef(null);
     const [valueInput, setValueInput] = useState('');
     const [message, setMessage] = useState({ text: '', type: '' });
+    const [isLoadingAddColumn, setIsLoadingAddColumn] = useState(false);
 
     useEffect(() => {
         if(isShowAddList === true && inputRef && inputRef.current){
@@ -158,6 +160,7 @@ const BoardContent = () => {
             return;
         }
 
+        setIsLoadingAddColumn(true);
         try {
             // Criar a nova coluna
             const newColumn = {
@@ -200,6 +203,8 @@ const BoardContent = () => {
                 text: 'Erro ao adicionar coluna. Por favor, tente novamente.', 
                 type: 'error' 
             });
+        } finally {
+            setIsLoadingAddColumn(false);
         }
     }
 
@@ -272,10 +277,25 @@ const BoardContent = () => {
                                 ref={inputRef} 
                                 value={valueInput}
                                 onChange={(e) => setValueInput(e.target.value)}
+                                disabled={isLoadingAddColumn}
                             />
                             <div className='group-btn'>
-                                <button className='btn btn-success' onClick={() => handleAddList()}>Add list</button>
-                                <FontAwesomeIcon icon={faClose} onClick={() => setIsShowAddList(false)} />
+                                <button 
+                                    className='btn btn-success' 
+                                    onClick={() => handleAddList()}
+                                    disabled={isLoadingAddColumn || !valueInput.trim()}
+                                >
+                                    {isLoadingAddColumn ? <LoadingSpinner size="sm" /> : 'Add list'}
+                                </button>
+                                <FontAwesomeIcon 
+                                    icon={faClose} 
+                                    onClick={() => {
+                                        if (!isLoadingAddColumn) {
+                                            setIsShowAddList(false);
+                                            setValueInput('');
+                                        }
+                                    }} 
+                                />
                             </div>
                         </div>
                     : 
