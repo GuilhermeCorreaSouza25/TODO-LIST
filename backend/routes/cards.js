@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../config/database');
+const pool = require('../services/db'); 
 const { v4: uuidv4 } = require('uuid');
 const { sendEmail } = require('../services/emailService');
 require('dotenv').config();
@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
 
 // POST a new card
 router.post('/', async (req, res) => {
-  const { boardId, columnId, title, description, dueDate } = req.body;
+  const { boardId, columnId, title, descricao, data_fim } = req.body;
   if (!boardId || !columnId || !title) {
     return res.status(400).json({ message: 'boardId, columnId e title são obrigatórios' });
   }
@@ -27,8 +27,8 @@ router.post('/', async (req, res) => {
   const createdAt = new Date();
   try {
     await pool.query(
-      'INSERT INTO cards (id, boardId, columnId, title, description, dueDate, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [id, boardId, columnId, title, description || null, dueDate || null, createdAt]
+      'INSERT INTO cards (id, boardId, columnId, title, descricao, data_fim, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [id, boardId, columnId, title, descricao || null, data_fim || null, createdAt]
     );
     const [rows] = await pool.query('SELECT * FROM cards WHERE id = ?', [id]);
     const newCard = rows[0];
@@ -58,7 +58,7 @@ router.post('/', async (req, res) => {
 // PUT update a card
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { title, description, dueDate, completed, columnId, boardId } = req.body;
+  const { title, descricao, data_fim, completed, columnId, boardId } = req.body;
   try {
     // Primeiro, vamos verificar se o card existe
     const [existingCard] = await pool.query('SELECT * FROM cards WHERE id = ?', [id]);
@@ -114,4 +114,4 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-module.exports = router; 
+  module.exports = router ; 

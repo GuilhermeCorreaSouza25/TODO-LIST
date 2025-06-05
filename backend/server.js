@@ -1,22 +1,22 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const taskRoutes = require('./routes/tasks').router; // Acessa o router exportado
+
 const { scheduleUpcomingTaskReminders } = require('./services/notificationService');
-const boardRoutes = require('./routes/boards').router;
-const columnRoutes = require('./routes/columns').router;
+const boardRoutes = require('./routes/boards');
+const columnRoutes = require('./routes/columns');
+const cardRoutes = require('./routes/cards');
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middlewares
-app.use(cors()); // Permite requisições de diferentes origens (ex: frontend em localhost:3000)
-app.use(express.json()); // Para parsear JSON no corpo das requisições
+app.use(cors());
+app.use(express.json());
 
-// Routes
-app.use('/api/tasks', taskRoutes);
+// Rotas
+app.use('/api/cards', cardRoutes);
 app.use('/api/boards', boardRoutes);
 app.use('/api/columns', columnRoutes);
 
@@ -24,7 +24,6 @@ app.get('/', (req, res) => {
   res.send('Backend da To-Do List está rodando!');
 });
 
-// Iniciar o agendador de notificações
 scheduleUpcomingTaskReminders();
 
 app.listen(PORT, () => {
