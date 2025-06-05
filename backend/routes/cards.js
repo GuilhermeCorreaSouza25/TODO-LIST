@@ -13,7 +13,32 @@ router.get('/', async (req, res) => {
     const [cards] = await pool.query('SELECT * FROM cards');
     res.json(cards);
   } catch (error) {
-    res.status(500).json({ message: 'Erro ao buscar cards', error });
+    console.error('Erro ao buscar todos os cards:', error);
+    res.status(500).json({ message: 'Erro ao buscar cards', error: error.message });
+  }
+});
+
+// GET cards by column
+router.get('/column/:columnId', async (req, res) => {
+  const { columnId } = req.params;
+  try {
+    // Primeiro, verificar se a coluna existe
+    const [columns] = await pool.query('SELECT * FROM columns WHERE id = ?', [columnId]);
+    if (columns.length === 0) {
+      return res.status(404).json({ message: 'Coluna não encontrada' });
+    }
+
+    // Buscar os cards da coluna
+    const [cards] = await pool.query('SELECT * FROM cards WHERE columnId = ?', [columnId]);
+    console.log(`Cards encontrados para a coluna ${columnId}:`, cards.length);
+    res.json(cards);
+  } catch (error) {
+    console.error(`Erro ao buscar cards para a coluna ${columnId}:`, error);
+    res.status(500).json({ 
+      message: 'Erro ao buscar cards da coluna', 
+      error: error.message,
+      columnId 
+    });
   }
 });
 
@@ -114,4 +139,4 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-  module.exports = router ; 
+module.exports = router; 

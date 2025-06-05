@@ -16,7 +16,7 @@ export const initData = async () => {
 
             // Para cada coluna, buscar seus cards
             const columnsWithCards = await Promise.all(columns.map(async (column) => {
-                const cardsResponse = await axios.get(`${apiUrl}/tasks/column/${column.id}`);
+                const cardsResponse = await axios.get(`${apiUrl}/cards/column/${column.id}`);
                 const cards = cardsResponse.data;
 
                 return {

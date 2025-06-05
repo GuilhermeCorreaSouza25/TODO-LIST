@@ -61,7 +61,7 @@ const Column = (props) => {
             }
             setIsLoadingCards(true);
             try {
-                const response = await axios.get(`${apiUrl}/tasks/column/${column.id}`);
+                const response = await axios.get(`${apiUrl}/cards/column/${column.id}`);
                 let cardOrderArray = column.cardOrder || [];
                 if (typeof cardOrderArray === 'string') {
                     try {
@@ -184,7 +184,7 @@ const Column = (props) => {
                     descricao: formData.descricao,
                     data_fim: formData.data_fim || null,
                 };
-                const response = await axios.put(`${apiUrl}/tasks/${editingCardData.id}`, payloadToUpdate);
+                const response = await axios.put(`${apiUrl}/cards/${editingCardData.id}`, payloadToUpdate);
                 const returnedUpdatedCard = response.data;
 
                 const finalUpdatedCard = {
@@ -216,7 +216,7 @@ const Column = (props) => {
                     description: formData.description,
                     data_fim: formData.data_fim || null,
                 };
-                const response = await axios.post(`${apiUrl}/tasks`, newCardPayload);
+                const response = await axios.post(`${apiUrl}/cards`, newCardPayload);
                 let createdCard = response.data;
 
                 if (!createdCard || !createdCard.id) throw new Error('Resposta inválida do servidor ao criar card.');
@@ -283,7 +283,7 @@ const Column = (props) => {
         try {
             // If card moved to a different column
             if (dropResult.payload && dropResult.payload.columnId && dropResult.payload.columnId !== column.id) {
-                await axios.put(`${apiUrl}/tasks/${movedCard.id}`, { columnId: column.id });
+                await axios.put(`${apiUrl}/cards/${movedCard.id}`, { columnId: column.id });
                 
                 const sourceColumnId = dropResult.payload.columnId;
                 // Logic to update source column's cardOrder (simplified for brevity, full logic was in original)

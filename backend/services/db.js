@@ -12,4 +12,20 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
+// Teste de conexão
+pool.getConnection()
+  .then(connection => {
+    console.log('Conexão com o banco de dados estabelecida com sucesso!');
+    connection.release();
+  })
+  .catch(err => {
+    console.error('Erro ao conectar com o banco de dados:', err);
+    console.error('Configurações atuais:', {
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      database: process.env.DB_NAME,
+      port: process.env.DB_PORT || 3306
+    });
+  });
+
 module.exports = pool; 

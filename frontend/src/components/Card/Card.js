@@ -43,7 +43,7 @@ const Card = ({ card, isFirstCard, onUpdateCard, onEditRequest }) => {
         }
         setIsLoading(true);
         try {
-            const response = await axios.put(`${apiUrl}/tasks/${card.id}`, { title: trimmedTitle });
+            const response = await axios.put(`${apiUrl}/cards/${card.id}`, { title: trimmedTitle });
             onUpdateCard({ ...card, title: response.data.title || trimmedTitle }); 
         } catch (error) {
             console.error("Erro ao editar título do card:", error);
@@ -57,7 +57,7 @@ const Card = ({ card, isFirstCard, onUpdateCard, onEditRequest }) => {
     const handleDelete = async () => {
         setIsLoading(true);
         try {
-            await axios.delete(`${apiUrl}/tasks/${card.id}`);
+            await axios.delete(`${apiUrl}/cards/${card.id}`);
             onUpdateCard({ ...card, _destroy: true });
         } catch (err) {
             console.error("Erro ao excluir card:", err);
@@ -96,16 +96,11 @@ const Card = ({ card, isFirstCard, onUpdateCard, onEditRequest }) => {
         try {
             const payloadToUpdate = {
                 title: formData.title,
-                // Corrigido para 'descricao' como é mais comum, e 'data_fim'
-                descricao: formData.descricao, // Assumindo que o CardModal usa 'descricao'
-                data_fim: formData.data_fim || null,      // Assumindo que o CardModal usa 'data_fim'
+                descricao: formData.descricao,
+                data_fim: formData.data_fim || null,
             };
-            // Se seu backend usa 'descricao' e 'data_fim', ajuste aqui:
-            // descricao: formData.descricao,
-            // data_fim: formData.data_fim || null,
 
-
-            const response = await axios.put(`${apiUrl}/tasks/${card.id}`, payloadToUpdate);
+            const response = await axios.put(`${apiUrl}/cards/${card.id}`, payloadToUpdate);
             const updatedCardFromApi = response.data;
 
             const finalUpdatedCard = {
@@ -117,7 +112,6 @@ const Card = ({ card, isFirstCard, onUpdateCard, onEditRequest }) => {
             };
             
             onUpdateCard(finalUpdatedCard);
-            // Atualiza o estado local do título também, caso tenha sido alterado no modal
             if (finalUpdatedCard.title !== title) {
                 setTitle(finalUpdatedCard.title);
             }
