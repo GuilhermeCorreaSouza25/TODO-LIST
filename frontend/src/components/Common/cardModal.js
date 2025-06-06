@@ -5,36 +5,59 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import LoadingSpinner from './LoadingSpinner'; // Adjust path if needed
 
+
+const formatDateForInput = (dateString) => {
+    if (!dateString) return '';
+    try {
+        return new Date(dateString).toISOString().split('T')[0];
+    } catch (e) { return ''; }
+};
+
+
 const CardModal = ({ show, onHide, onSubmit, cardData, isLoading, modalTitlePrefix = "Card" }) => {
     const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [dueDate, setDueDate] = useState('');
+    const [descricao, setDescricao] = useState('');
+    const [dataFim, setDataFim] = useState('');
     const titleInputRef = useRef(null);
 
     useEffect(() => {
         if (show) { // Only update form when modal becomes visible or cardData changes
             if (cardData) {
                 setTitle(cardData.title || '');
-                setDescription(cardData.description || '');
-                // Ensure dueDate from backend (which might be DATETIME) is formatted for <input type="date">
-                setDueDate(cardData.dueDate ? new Date(cardData.dueDate).toISOString().split('T')[0] : '');
-            } else {
-                setTitle('');
-                setDescription('');
-                setDueDate('');
+                setDescricao(cardData.descricao || '');
+                // Ensure dataFim from backend (which might be DATETIME) is formatted for <input type="date">
+                setDataFim(formatDateForInput(cardData.data_fim));
             }
-            // Focus title input when modal opens
-            setTimeout(() => titleInputRef.current?.focus(), 100);
+            // } else {
+            //     setTitle('');
+            //     setDescricao('');
+            //     setDataFim('');
+            // }
+            // // Focus title input when modal opens
+            // setTimeout(() => titleInputRef.current?.focus(), 100);
         }
     }, [cardData, show]);
 
+    const handleDateChange = (e) => {
+        console.log('[MODAL-ETAPA 1] Input de data foi alterado. Novo valor:', e.target.value);
+        setDataFim(e.target.value);
+    };
+
     const handleSubmitInternal = () => {
+        const formData = {
+            title: title.trim(),
+            descricao: descricao.trim(),
+            data_fim: dataFim || null, // Ensure dataFim is null if empty
+        }
+        console.log('[MODAL-ETAPA 2] Enviando para o componente pai (Card.js):', formData);
+
         if (!title.trim()) {
             alert('Por favor, insira um título para o card.');
             titleInputRef.current?.focus();
             return;
         }
-        onSubmit({ title: title.trim(), description: description.trim(), dueDate: dueDate || null });
+        // console.log('Valor do estado dataFim:', dataFim);
+        onSubmit(formData);
     };
 
     const handleEnterPress = (event) => {
@@ -65,22 +88,22 @@ const CardModal = ({ show, onHide, onSubmit, cardData, isLoading, modalTitlePref
                             ref={titleInputRef}
                         />
                     </Form.Group>
-                    <Form.Group className="mb-3" controlId="cardModalDescription">
+                    <Form.Group className="mb-3" controlId="cardModaldescricao">
                         <Form.Label>Descrição</Form.Label>
                         <Form.Control
                             as="textarea"
                             rows={4}
                             placeholder="Digite a descrição (opcional)"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
+                            value={descricao}
+                            onChange={(e) => setDescricao(e.target.value)}
                         />
                     </Form.Group>
-                    <Form.Group className="mb-3" controlId="cardModalDueDate">
+                    <Form.Group className="mb-3" controlId="cardModaldataFim">
                         <Form.Label>Data de Vencimento</Form.Label>
                         <Form.Control
                             type="date"
-                            value={dueDate}
-                            onChange={(e) => setDueDate(e.target.value)}
+                            value={dataFim}
+                            onChange={(e) => setDataFim(e.target.value)}
                         />
                     </Form.Group>
                 </Form>

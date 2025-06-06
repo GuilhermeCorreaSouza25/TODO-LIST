@@ -2,24 +2,26 @@
 
 .card-item {
     background-color: white;
-    padding: 8px 10px;
-    margin-bottom: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
     border-radius: $common-border-radius;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.01);
     cursor: pointer;
-    position: relative;
-
-    // // Quando o dropdown está aberto, aumenta o z-index do card inteiro
-    // &.dropdown-is-open {
-    //     z-index: 9999; // Ou qualquer valor maior que o z-index padrão dos outros cards
-    // }
+    transition: box-shadow 0.2s ease-in-out;
+    // position: relative;
 
     &:hover {
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+
         .card-actions-icons {
             opacity: 1;
             visibility: visible;
         }
-        // background-color: #f8f8f8;
+    }
+
+    .card-content-wrapper{
+        display: flex;
+        flex-direction: column;
     }
 
     img {
@@ -30,41 +32,33 @@
         display: block; 
     }
 
-    .card-main-content{
+    .card-main-content {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        gap: 8px; // Espaçamento entre os elementos dentro do card
-        margin-bottom: 6px;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 8px;
     }
 
+    .card-title-container {
+        display: flex;
+        justify-content: space-between; 
+        align-items: center;
+        width: 100%;
+        gap: 8px;
     }
-    // .card-content {
-    //     display: flex;
-    //     justify-content: space-between;
-    //     align-items: center;
-    //     gap: 8px;
-    // }
 
     .card-title {
-        flex: 1;
-        padding: 4px 0px; // Ajustado para corresponder ao input
-        font-weight: bold;
-        font-size: 14px; 
+        flex-grow: 1;
+        font-weight: 600;
+        font-size: 1rem;
         color: $text-color-dark;
-        cursor: pointer;
-        min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-
-        // &:hover {
-        //     background-color: #f4f5f7;
-        //     border-radius: 3px;
-        // }
+        margin:0;
     }
 
-    
     .customize-input-card { 
         width: 100%;
         border: 2px solid $primary-color !important; 
@@ -82,179 +76,77 @@
     }
 
     .card-actions-icons {
-        display: flex; // Alinha os botões lado a lado
-        align-items: center;
-        // Para aparecerem no hover do .card-item (controlado pelo &:hover do .card-item)
+        display: flex;
+        flex-shrink: 0;
+        gap: 4px;
+
         opacity: 0;
         visibility: hidden;
-        transition: opacity 0.1s ease-in-out, visibility 0.1s ease-in-out; // Transição rápida
+        transition: opacity 0.1s ease-in-out, visibility 0.1s ease-in-out;
 
         .card-action-icon-button {
             background: transparent;
             border: none;
-            color: $icon-color-neutral; // Use sua variável (ex: #6b778c)
+            color: $icon-color-neutral;
             cursor: pointer;
-            padding: 4px; // Padding para área de clique
+            padding: 5px; 
             border-radius: $common-border-radius;
-            font-size: 14px; // Ajuste o tamanho do ícone se necessário
-            line-height: 1; // Para melhor alinhamento vertical do ícone
-            margin-left: 2px; // Pequeno espaço entre os botões, se houver mais de um
+            font-size: 14px;
+            line-height: 1; 
 
             &:hover {
-                background-color: $background-hover-light; // Use sua variável (ex: #091e420f ou #f0f0f0)
-                color: $icon-color-hover; // Use sua variável (ex: #172b4d)
+                background-color: $background-hover-light; 
+                color: $icon-color-hover;
             }
 
             &:disabled {
-                color: $text-color-disabled; // Use sua variável (ex: #a5adba)
+                color: $text-color-disabled;
                 cursor: not-allowed;
-                background-color: transparent; // Manter transparente quando desabilitado
+                background-color: transparent;
             }
 
-            // Estilo específico para o botão de excluir no hover para dar destaque
             &.delete-card-btn {
                 &:hover {
-                    color: $danger-color; // Use sua variável de cor de perigo (ex: #bf2600)
-                    // background-color: rgba($danger-color, 0.1); // Opcional: fundo vermelho muito claro
+                    color: $danger-color;
                 }
             }
         }
     }
 
-    // .card-dropdown {
-    //     position: relative; // Importante para o .dropdown-menu se posicionar corretamente
-    //     // z-index: 1000; // Este z-index é alto, mas o z-index do card-item pai é mais crucial para o problema entre cards.
-    //                      // Pode ser mantido para garantir que o toggle esteja acima de outros elementos DENTRO do card-content se houver sobreposição.
-    //                      // No entanto, com o z-index no card-item.dropdown-is-open, este pode ser menos crítico.
-
-    //     .dropdown-toggle {
-    //         padding: 2px 7px;
-    //         border-radius: 3px;
-    //         transition: background-color 0.2s;
-    //         color: #6b778c;
-    //         background: transparent;
-    //         border: none;
-    //         cursor: pointer;
-
-    //         &::after { // Remove a seta padrão do Bootstrap Dropdown
-    //             display: none;
-    //         }
-
-    //         &:hover {
-    //             background-color: #091e4214;
-    //             color: #172b4d;
-    //         }
-
-    //         // Remove o outline/box-shadow de foco padrão do Bootstrap
-    //         &:focus, &:active {
-    //             outline: none !important;
-    //             box-shadow: none !important;
-    //             background-color: #091e4214; // Manter o hover no foco se desejado
-    //         }
-
-    //         svg {
-    //             font-size: 16px;
-    //             color: #6b778c; // Cor padrão do ícone
-    //             display: block; // Para evitar espaço extra abaixo do ícone
-    //         }
-    //     }
-
-    //     .dropdown-menu {
-    //         position: absolute; // Posição absoluta em relação ao .card-dropdown (ou .card-item se .card-dropdown não for 'relative')
-    //         right: 0;
-    //         top: 100%; // Posiciona abaixo do toggle
-    //         min-width: 180px; // Aumentei um pouco para acomodar melhor texto e ícones
-    //         padding: 4px 0;
-    //         margin: 0;
-    //         background-color: white;
-    //         border: none; // Se quiser uma borda sutil: border: 1px solid #dfe1e6;
-    //         border-radius: 3px;
-    //         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 0 1px rgba(0,0,0,0.1); // Sombra mais pronunciada
-    //         z-index: 1001; // Deve ser alto para ficar sobre outros elementos DENTRO do card.
-    //                        // O valor 1050+ é comum para dropdowns/modais do Bootstrap para garantir visibilidade.
-    //                        // Como o card pai agora controla o empilhamento sobre outros cards, 1001 aqui é para contexto interno.
-    //         transform: translateY(4px); // Pequeno espaço entre o toggle e o menu
-
-    //         .dropdown-item {
-    //             padding: 8px 12px; // Mais padding para melhor toque/clique
-    //             font-size: 14px;
-    //             color: #172b4d;
-    //             cursor: pointer;
-    //             display: flex;
-    //             align-items: center;
-    //             gap: 8px;
-
-    //             &:hover {
-    //                 background-color: #f4f5f7;
-    //             }
-
-    //             &:active {
-    //                 background-color: #e4f0f6; // Cor de "pressionado" do Atlassian
-    //                 color: #0052cc; // Cor do texto ativo
-    //             }
-
-    //             // Para o item de exclusão
-    //             &.text-danger { // Supondo que você adicione esta classe ao Dropdown.Item de exclusão
-    //                 color: #bf2600; // Vermelho mais escuro (Atlassian)
-    //                 &:hover {
-    //                     background-color: #ffbdad; // Fundo vermelho claro no hover
-    //                     color: #bf2600; // Manter cor do texto
-    //                 }
-    //                 &:active {
-    //                     background-color: #ff8f73; // Vermelho mais forte no active
-    //                     color: #9e1c00;
-    //                 }
-    //                 svg {
-    //                     color: #bf2600; // Ícone vermelho
-    //                 }
-    //             }
-
-
-    //             svg {
-    //                 width: 16px; // Ajustado para consistência com o font-size
-    //                 height: 16px;
-    //                 margin-right: 8px; // Espaço entre ícone e texto
-    //             }
-    //         }
-    //     }
-    // }
 
     .card-additional-details {
-        margin-top: 4px;
-        font-size: 12px;
-        color: $text-color-medium;
+        margin-top: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
 
         .card-detail-item {
             display: flex;
-            align-items: flex-start;
-            gap: 6px;
-            margin-bottom: 4px;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+            color: $text-color-dark;
 
             &:last-child {
                 margin-bottom: 0;
             }
 
             .card-detail-icon {
-                margin-top: 2px;
-                font-size: 11px;
                 color: $icon-color-secondary;
             }
 
             p {
                 margin: 0;
-                line-height: 1.4;
-                word-break: break-word;
+            }
+
+            &.description-icon{
+                cursor:help;
             }
         }
 
-        .card-due-date {
-            p {
-                font-weight: 500;
-            }
-        }
     }
 
-    .loading-overlay { // Se você usar um overlay de loading no card
+    .loading-overlay {
         position: absolute;
         top: 0;
         left: 0;
@@ -268,37 +160,18 @@
         z-index: 10; 
     }
 
-    // img {
-    //     width: 100%;
-    //     height: auto;
-    //     margin-bottom: 8px;
-    //     border-radius: 3px; // Adicionar borda arredondada se a imagem estiver no topo
-    // }
+    .card-ghost {
+        opacity: 0.5;
+        background: #f8f8f8;
+    }
 
-// Outras classes que você tinha (revisar z-index se eles interagem com os cards)
-.card-ghost {
-    opacity: 0.5;
-    background: #f8f8f8;
-}
+    .card-ghost-drop {
+        background-color: #f8f8f8;
+    }
 
-.card-ghost-drop {
-    background-color: #f8f8f8;
-}
+    .card-drop-preview {
+        background-color: #e6e6e6;
+        border: 1px dashed #b0b0b0;
+    }
 
-.card-drop-preview {
-    background-color: #e6e6e6;
-    border: 1px dashed #b0b0b0;
-}
-
-// Verifique se estes necessitam de z-index ou se podem interferir
-.column-content {
-    position: relative; // Se tiver position relative, pode precisar de um z-index específico
-                        // ou pode ser a causa de problemas de empilhamento se os cards estiverem dentro dele.
-    // z-index: 1; // Avalie se este é necessário e como interage com o z-index dos cards.
-                   // Se column-content for o pai direto dos cards e tiver z-index, ele cria um contexto.
-}
-
-.cards-container {
-    position: relative; // Mesma observação que .column-content
-    // z-index: 1;
 }

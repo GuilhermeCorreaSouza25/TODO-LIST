@@ -7,13 +7,13 @@ const TaskItem = ({ card, onTaskUpdated, onTaskDeleted, onSelectTask, onToggleCo
   const handleToggleComplete = async () => {
     try {
       const updatedTask = { ...card, completed: !card.completed };
-      const response = await axios.put(`${apiUrl}/tasks/${card.id}`, {
-        card: updatedTask.card,
-        dueDate: updatedTask.dueDate,
+      const response = await axios.put(`${apiUrl}/cards/${card.id}`, {
+        title: updatedTask.title,
+        data_fim: updatedTask.data_fim,
+        descricao: updatedTask.descricao,
         completed: updatedTask.completed
       });
       onTaskUpdated(response.data);
-
     } catch (error) {
       console.error('Erro ao atualizar tarefa:', error);
       alert('Falha ao atualizar tarefa.');
@@ -21,9 +21,9 @@ const TaskItem = ({ card, onTaskUpdated, onTaskDeleted, onSelectTask, onToggleCo
   };
 
   const handleDelete = async () => {
-    if (window.confirm(`Tem certeza que deseja remover a tarefa "${card.card}"?`)) {
+    if (window.confirm(`Tem certeza que deseja remover a tarefa "${card.title}"?`)) {
       try {
-        await axios.delete(`${apiUrl}/tasks/${card.id}`);
+        await axios.delete(`${apiUrl}/cards/${card.id}`);
         onTaskDeleted(card.id);
       } catch (error) {
         console.error('Erro ao deletar tarefa:', error);
@@ -37,11 +37,16 @@ const TaskItem = ({ card, onTaskUpdated, onTaskDeleted, onSelectTask, onToggleCo
       <div className="flex items-center">
         <div onClick={() => onSelectTask && onSelectTask(card)} style={{ cursor: 'pointer' }} className="flex-1">
           <span className={`text-lg ${card.completed ? 'text-gray-500' : 'text-gray-800'}`}>
-            {card.card}
+            {card.title}
           </span>
-          {card.dueDate && (
-            <p className={`text-xs ${new Date(card.dueDate) < new Date() && !card.completed ? 'text-red-500 font-semibold' : 'text-gray-500'}`}>
-              Prazo: {new Date(card.dueDate).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+          {card.data_fim && (
+            <p className={`text-xs ${new Date(card.data_fim) < new Date() && !card.completed ? 'text-red-500 font-semibold' : 'text-gray-500'}`}>
+              Prazo: {new Date(card.data_fim).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+            </p>
+          )}
+          {card.descricao && (
+            <p className="text-sm text-gray-600 mt-1">
+              {card.descricao}
             </p>
           )}
         </div>

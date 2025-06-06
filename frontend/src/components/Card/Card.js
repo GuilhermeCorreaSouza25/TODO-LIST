@@ -3,18 +3,18 @@ import imgDesign from '../../assets/img-design.png';
 import axios from 'axios';
 import { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faCalendarAlt, faAlignLeft } from '@fortawesome/free-solid-svg-icons'; // Adicionei ícones para data e descrição
+import { faEdit, faTrash, faCalendarAlt, faAlignLeft } from '@fortawesome/free-solid-svg-icons';
 import ConfirmModal from '../Common/ConfirmModal';
 import LoadingSpinner from '../Common/LoadingSpinner';
-import { MODAL_ACTION_CLOSE, MODAL_ACTION_CONFIRM } from '../../utilities/constant';
+import { MODAL_ACTION_CONFIRM } from '../../utilities/constant';
 import { Form } from 'react-bootstrap';
 import CardModal from '../Common/cardModal';
 
 const apiUrl = process.env.REACT_APP_API_URL;
 
-const Card = ({ card, isFirstCard, onUpdateCard, onEditRequest }) => { 
+const Card = ({ card, isFirstCard, onUpdateCard }) => { 
     const [isEditingTitle, setIsEditingTitle] = useState(false);
-    const [title, setTitle] = useState(card.title); // Para edição inline do título
+    const [title, setTitle] = useState(card.title);
     const [isLoading, setIsLoading] = useState(false);
     const [showModalDelete, setShowModalDelete] = useState(false);
     const [showCardEditModal, setShowCardEditModal] = useState(false);
@@ -22,13 +22,12 @@ const Card = ({ card, isFirstCard, onUpdateCard, onEditRequest }) => {
     const inputRef = useRef(null);
 
     useEffect(() => {
-        if (isEditingTitle && inputRef.current) {
-            inputRef.current.focus();
-            inputRef.current.select();
+        if (isEditingTitle) {
+            inputRef.current?.focus();
+            inputRef.current?.select();
         }
     }, [isEditingTitle]);
 
-    // Atualiza o estado 'title' se a prop 'card.title' mudar externamente
     useEffect(() => {
         setTitle(card.title);
     }, [card.title]);
@@ -36,22 +35,53 @@ const Card = ({ card, isFirstCard, onUpdateCard, onEditRequest }) => {
     const handleSaveTitle = async () => {
         if (!isEditingTitle) return;
         const trimmedTitle = title.trim();
+        setIsEditingTitle(false);
         if (trimmedTitle === '' || trimmedTitle === card.title) {
             setTitle(card.title);
-            setIsEditingTitle(false);
             return;
         }
         setIsLoading(true);
         try {
             const response = await axios.put(`${apiUrl}/cards/${card.id}`, { title: trimmedTitle });
-            onUpdateCard({ ...card, title: response.data.title || trimmedTitle }); 
+            onUpdateCard(response.data); 
         } catch (error) {
             console.error("Erro ao editar título do card:", error);
-            setTitle(card.title);
+            setTitle(card.title); 
         } finally {
             setIsLoading(false);
-            setIsEditingTitle(false);
         }
+    };
+    
+    // ==================================================================
+    // AQUI ESTÁ A FUNÇÃO CRÍTICA, AGORA NA VERSÃO CORRETA E FINAL
+    // ==================================================================
+    const handleSubmitCardEditModal = async (formData) => {
+        setIsLoadingCardEdit(true);
+        try {
+            const payloadToUpdate = {
+                title: formData.title,
+                descricao: formData.descricao,
+                data_fim: formData.data_fim || null, // Garante que a propriedade correta (data_fim) seja lida
+            };
+
+            const response = await axios.put(`${apiUrl}/cards/${card.id}`, payloadToUpdate);
+            
+            onUpdateCard(response.data);
+            setShowCardEditModal(false);
+
+        } catch (err) {
+            console.error("Erro ao atualizar card via modal:", err);
+            alert('Erro ao atualizar card. Por favor, tente novamente.');
+        } finally {
+            setIsLoadingCardEdit(false);
+        }
+    };
+    
+    const formatDate = (dateString) => {
+        if (!dateString) return null;
+        const date = new Date(`${dateString}T00:00:00`);
+        if (isNaN(date.getTime())) return "Data inválida";
+        return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
     };
 
     const handleDelete = async () => {
@@ -66,133 +96,49 @@ const Card = ({ card, isFirstCard, onUpdateCard, onEditRequest }) => {
             setShowModalDelete(false);
         }
     };
-
-    const handleEnableEditTitle = (e) => {
-        e.stopPropagation();
-        setIsEditingTitle(true);
-    };
-
-    const handleRequestDelete = (e) => {
-        e.stopPropagation();
-        setShowModalDelete(true);
-    };
-
+    
     const onConfirmDeleteModalAction = (type) => {
-        if (type === MODAL_ACTION_CLOSE) setShowModalDelete(false);
         if (type === MODAL_ACTION_CONFIRM) handleDelete();
-    };
-
-    const handleOpenCardEditModal = (e) => {
-        if (e) e.stopPropagation(); // e pode não existir se chamado de outro lugar
-        setShowCardEditModal(true);
-    };
-
-    const handleCloseCardEditModal = () => {
-        setShowCardEditModal(false);
-    };
-
-    const handleSubmitCardEditModal = async (formData) => {
-        setIsLoadingCardEdit(true);
-        try {
-            const payloadToUpdate = {
-                title: formData.title,
-                descricao: formData.descricao,
-                data_fim: formData.data_fim || null,
-            };
-
-            const response = await axios.put(`${apiUrl}/cards/${card.id}`, payloadToUpdate);
-            const updatedCardFromApi = response.data;
-
-            const finalUpdatedCard = {
-                ...card,
-                ...updatedCardFromApi,
-                title: updatedCardFromApi.title !== undefined ? updatedCardFromApi.title : formData.title,
-                descricao: updatedCardFromApi.descricao !== undefined ? updatedCardFromApi.descricao : formData.descricao,
-                data_fim: updatedCardFromApi.data_fim !== undefined ? updatedCardFromApi.data_fim : (formData.data_fim || null),
-            };
-            
-            onUpdateCard(finalUpdatedCard);
-            if (finalUpdatedCard.title !== title) {
-                setTitle(finalUpdatedCard.title);
-            }
-            handleCloseCardEditModal();
-        } catch (err) {
-            console.error("Erro ao atualizar card via modal:", err.response ? err.response.data : err.message);
-            alert('Erro ao atualizar card. Por favor, tente novamente.');
-        } finally {
-            setIsLoadingCardEdit(false);
-        }
-    };
-
-    // Função para formatar a data
-    const formatDate = (dateString) => {
-        if (!dateString) return null;
-        // Adicionar + 'T00:00:00' se a data for apenas YYYY-MM-DD para evitar problemas de fuso horário com toLocaleDateString
-        // ou usar uma biblioteca de datas para formatação mais robusta.
-        // Se a data já incluir informações de hora/fuso, isso pode não ser necessário.
-        const date = new Date(dateString);
-         // Verifica se a data é válida antes de formatar
-        if (isNaN(date.getTime())) {
-            return "Data inválida";
-        }
-        return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        else setShowModalDelete(false);
     };
 
     return (
         <>
             <div className={`card-item ${isLoading ? 'is-loading-inline' : ''}`}>
-                { card.cover ?
-                    <img src={card.cover} alt='card cover' onMouseDown={event => event.preventDefault()}/>
-                    : (isFirstCard && imgDesign && <img src={imgDesign} alt='default design' onMouseDown={event => event.preventDefault()}/>)
-                }
-                <div className="card-main-content"> {/* Renomeado para diferenciar da área de detalhes */}
+                { card.cover && <img src={card.cover} alt='card cover' onMouseDown={e => e.preventDefault()}/> }
+                
+                <div className="card-main-content">
                     {isEditingTitle ? (
                         <Form.Control
-                            size="sm"
-                            type="text"
-                            value={title} // Usa o estado 'title' para edição
-                            className='customize-input-card'
-                            onChange={(event) => setTitle(event.target.value)}
+                            size="sm" type="text" value={title} className='customize-input-card'
+                            onChange={(e) => setTitle(e.target.value)}
                             onBlur={handleSaveTitle}
                             onKeyPress={(e) => { if (e.key === 'Enter') handleSaveTitle();}}
-                            onMouseDown={(event) => event.preventDefault()}
-                            ref={inputRef}
-                            spellCheck="false"
+                            onMouseDown={(e) => e.preventDefault()}
+                            ref={inputRef} spellCheck="false"
                         />
                     ) : (
-                        <>  
-                            <div className="card-title" onClick={handleEnableEditTitle}> 
-                                {card.title} {/* Exibe card.title (prop) */}
+                        <div className="card-title-container"> 
+                            <div className="card-title" onClick={() => setIsEditingTitle(true)}> 
+                                {card.title}
                             </div>
-                                    
                             <div className="card-actions-icons">
-                                <button 
-                                    className="card-action-icon-button" 
-                                    onClick={handleOpenCardEditModal}
-                                    disabled={isLoading || isEditingTitle} 
-                                    title="Editar card (detalhes)"
-                                >
+                                <button className="card-action-icon-button" onClick={() => setShowCardEditModal(true)} disabled={isLoading} title="Editar detalhes">
                                     <FontAwesomeIcon icon={faEdit} />
                                 </button>
-                                <button 
-                                    className="card-action-icon-button delete-card-btn" 
-                                    onClick={handleRequestDelete} 
-                                    disabled={isLoading || isEditingTitle}
-                                    title="Excluir card"
-                                >
+                                <button className="card-action-icon-button delete-card-btn" onClick={(e) => { e.stopPropagation(); setShowModalDelete(true); }} disabled={isLoading} title="Excluir card">
                                     <FontAwesomeIcon icon={faTrash} />
                                 </button>
                             </div>
-                        </>
+                        </div>
                     )}
                 </div>
                 
                 {!isEditingTitle && (card.descricao || card.data_fim) && (
                     <div className="card-additional-details">
                         {card.descricao && (
-                            <div className="card-detail-item card-descricao-text">
+                            <div className="card-detail-item" title={card.descricao}>
                                 <FontAwesomeIcon icon={faAlignLeft} className="card-detail-icon" />
-                                <p>{card.descricao}</p>
                             </div>
                         )}
                         {card.data_fim && (
@@ -203,14 +149,12 @@ const Card = ({ card, isFirstCard, onUpdateCard, onEditRequest }) => {
                         )}
                     </div>
                 )}
-                
-                {isLoading && isEditingTitle && <div className="card-loading-overlay"><LoadingSpinner size="sm" /></div>}
             </div>
             
             <ConfirmModal
                 show={showModalDelete}
                 title="Excluir Card"
-                content={`Tem certeza que deseja excluir o card: <b>${card.title}</b>? Esta ação não pode ser desfeita.`}
+                content={`Tem certeza que deseja excluir o card: <b>${card.title}</b>?`}
                 onAction={onConfirmDeleteModalAction}
                 isLoading={isLoading} 
             />
@@ -218,8 +162,8 @@ const Card = ({ card, isFirstCard, onUpdateCard, onEditRequest }) => {
             {showCardEditModal && (
                 <CardModal
                     show={showCardEditModal}
-                    onHide={handleCloseCardEditModal}
-                    onSubmit={handleSubmitCardEditModal}
+                    onHide={() => setShowCardEditModal(false)}
+                    onSubmit={handleSubmitCardEditModal} // AQUI a função corrigida é passada
                     cardData={card} 
                     isLoading={isLoadingCardEdit}
                     modalTitlePrefix="Editar Card"

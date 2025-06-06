@@ -27,13 +27,21 @@ const AddTaskForm = ({ onTaskAdded, onTaskUpdated, selectedTask, onCancelEdit })
     try {
       if (selectedTask) {
         // Atualizar tarefa existente
-        const updatedTask = { card: text, dueDate: dueDate || null };
-        const response = await axios.put(`${apiUrl}/tasks/${selectedTask.id}`, updatedTask);
+        const updatedTask = { 
+          title: text, 
+          data_fim: dueDate || null,
+          descricao: text // usando o mesmo texto como descrição por enquanto
+        };
+        const response = await axios.put(`${apiUrl}/cards/${selectedTask.id}`, updatedTask);
         onTaskUpdated(response.data);
       } else {
         // Adicionar nova tarefa
-        const newTask = { card: text, dueDate: dueDate || null };
-        const response = await axios.post(`${apiUrl}/tasks`, newTask);
+        const newTask = { 
+          title: text, 
+          data_fim: dueDate || null,
+          descricao: text // usando o mesmo texto como descrição por enquanto
+        };
+        const response = await axios.post(`${apiUrl}/cards`, newTask);
         onTaskAdded(response.data);
       }
       setText('');
