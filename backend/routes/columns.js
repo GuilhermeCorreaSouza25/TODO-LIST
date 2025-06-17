@@ -21,6 +21,8 @@ router.get('/board/:boardId', async (req, res) => {
 // Criar coluna
 router.post('/', async (req, res) => {
   const { boardId, name, cardOrder } = req.body;
+  
+  console.log(" verifique aqui :  ",req.body);
   const id = uuidv4();
   try {
     console.log('Criando coluna:', { id, boardId, name, cardOrder });
